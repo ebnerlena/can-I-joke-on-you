@@ -17,6 +17,7 @@ A robot that tells jokes to the user. Able to detect the user’s facial express
 - [Joke Recommender](./joke_recommender/)
 - [Emotion Classifier](./emotion_classification/)
 - [Robot UI](./robot_ui/)
+- [Presentations](./presentations)
 
 ## References
 - https://huggingface.co/docs/transformers.js/index
