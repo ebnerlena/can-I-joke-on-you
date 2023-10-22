@@ -16,6 +16,7 @@ A robot that tells jokes to the user. Able to detect the user’s facial express
 - [Presentations](./presentations)
 
 ## Links
+- [General DOcument](https://docs.google.com/document/d/1xoBDYfB_tQNx1Hu9t8IMaJoRUrBUHCxZczYuDr3DBCg/edit#heading=h.rekzzaq41cmi)
 - [Presentation 01](https://docs.google.com/presentation/d/1JB8wn9jGe2sOnM-HTnyxz9yOSQSLPO_NgbTbA2yuGwo/edit#slide=id.g288f80c3119_0_0)
 
 
