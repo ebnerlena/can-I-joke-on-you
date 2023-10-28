@@ -19,7 +19,7 @@ def extract_face_landmarks(image_path):
     return landmarks
 
 # Create and store the landmarks for every picture
-classes = ["non_smile", "smile", "test"]
+classes = ["test"]
 for c in classes:
     for dirpath, dirnames, filenames in os.walk(f"D:\Documents\GitHub\CIR\emotion_classification\\{c}"):
         for filename in filenames:
@@ -28,6 +28,6 @@ for c in classes:
             landmarks = extract_face_landmarks(full_path)
             if landmarks:
                 with open(f"{c}_data/{filename}.csv", "w") as file:
-                    file.write("Class;number;x;y;z")
+                    file.write("Class;number;x;y;z\n")
                     for i, landmark in enumerate(landmarks):
-                        file.write(c + ";" + str(i) + ";" + str(landmark.x) + ";" + str(landmark.y) + ";" + str(landmark.z) + "\n")
+                        file.write(filename + ";" + str(i) + ";" + str(landmark.x) + ";" + str(landmark.y) + ";" + str(landmark.z) + "\n")
