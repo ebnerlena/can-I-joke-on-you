@@ -4,7 +4,7 @@ Command: npx gltfjsx@6.2.14 billy-tankMaterial-properanims.glb --types
 */
 
 import * as THREE from 'three'
-import React, { createRef, useEffect, useRef } from 'react'
+import React, { useRef } from 'react'
 import { useGLTF, useAnimations } from '@react-three/drei'
 import { GLTF } from 'three-stdlib'
 
@@ -17,6 +17,7 @@ type GLTFResult = GLTF & {
   }
   materials: {
     Billy: THREE.MeshBasicMaterial
+    Billy: THREE.MeshBasicMaterial
     ['Pistol Tank']: THREE.MeshBasicMaterial
   }
 }
@@ -27,23 +28,18 @@ type GLTFActions = Record<ActionName, THREE.AnimationAction>
 type ContextType = Record<string, React.ForwardRefExoticComponent<JSX.IntrinsicElements['skinnedMesh'] | JSX.IntrinsicElements['bone']>>
 
 export function Model(props: JSX.IntrinsicElements['group']) {
-  const group = createRef<THREE.Group>()
+  const group = useRef<THREE.Group>()
   const { nodes, materials, animations } = useGLTF('/billy-tankMaterial-properanims.glb') as GLTFResult
-  const { actions } = useAnimations(animations, group)
-
-  useEffect(() => {
-    actions["idle"]?.play()
-  },[])
-
+  const { actions } = useAnimations<GLTFActions>(animations, group)
   return (
-    <group ref={group} {...props} dispose={null} castShadow>
+    <group ref={group} {...props} dispose={null}>
       <group name="Scene">
         <group name="Billy">
           <primitive object={nodes.mixamorigHips} />
-          <skinnedMesh name="body001" geometry={nodes.body001.geometry} material={materials.Billy} skeleton={nodes.body001.skeleton} castShadow />
+          <skinnedMesh name="body001" geometry={nodes.body001.geometry} material={materials.Billy} skeleton={nodes.body001.skeleton} />
           <group name="pistol">
-            <skinnedMesh name="seed-o-gun_Cube010mesh017" geometry={nodes['seed-o-gun_Cube010mesh017'].geometry} material={materials.Billy} skeleton={nodes['seed-o-gun_Cube010mesh017'].skeleton}  castShadow/>
-            <skinnedMesh name="seed-o-gun_Cube010mesh017_1" geometry={nodes['seed-o-gun_Cube010mesh017_1'].geometry} material={materials['Pistol Tank']} skeleton={nodes['seed-o-gun_Cube010mesh017_1'].skeleton} castShadow />
+            <skinnedMesh name="seed-o-gun_Cube010mesh017" geometry={nodes['seed-o-gun_Cube010mesh017'].geometry} material={materials.Billy} skeleton={nodes['seed-o-gun_Cube010mesh017'].skeleton} />
+            <skinnedMesh name="seed-o-gun_Cube010mesh017_1" geometry={nodes['seed-o-gun_Cube010mesh017_1'].geometry} material={materials['Pistol Tank']} skeleton={nodes['seed-o-gun_Cube010mesh017_1'].skeleton} />
           </group>
         </group>
       </group>
@@ -52,5 +48,3 @@ export function Model(props: JSX.IntrinsicElements['group']) {
 }
 
 useGLTF.preload('/billy-tankMaterial-properanims.glb')
-
-export default Model
