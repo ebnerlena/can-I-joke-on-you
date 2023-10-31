@@ -3,8 +3,13 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Commands
+
 - `npx gltfjsx RobotExpressive.glb --types ` -> create tsx file from .glb model
 
+- CartoonRobot looks cute but has no animations
+- BMO Cute, idle animation: https://sketchfab.com/3d-models/bmo-cute-model-3d-free-download-fe780b22c5b04ad0b0d6360687adf623
+- Billy-tankMaterial: has idle and dance animation
+- Expressive Robot from three.js Example has best animations
 
 ## Available Scripts
 
