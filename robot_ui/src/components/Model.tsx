@@ -9,10 +9,9 @@ Title: BMO Cute  Model 3D  Free Download
 
 import * as THREE from 'three'
 import { extend } from '@react-three/fiber'
-import React, { createRef, useEffect, useRef } from 'react'
+import React, { createRef, useEffect } from 'react'
 import { useGLTF, useAnimations } from '@react-three/drei'
 import { GLTF } from 'three-stdlib'
-import { act } from 'react-dom/test-utils'
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -70,5 +69,6 @@ export function Model(props: JSX.IntrinsicElements['group']) {
 }
 useGLTF.preload('/bmo_cute.glb')
 
+// extend({Model})
 
 export default Model
