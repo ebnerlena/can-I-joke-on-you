@@ -16,7 +16,7 @@ function App() {
           <directionalLight intensity={3} color="#ffffff" position={[3, 10, 10]} castShadow shadow-camera-top={2} shadow-camera-bottom={-2} shadow-camera-left={-2} shadow-camera-right={2} shadow-camera-near={0.1} shadow-camera-far={40} />
 
           <Suspense fallback={<div>Loading model...</div>}>
-            <Model position={[0,-2, 0]} />
+            <Model position={[0, 0, 0]} scale={[0.01, 0.01, 0.01]}/>
           </Suspense>
 
           <Plane args={[100, 100]} rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.1, 0]} receiveShadow />
