@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import './App.css';
 import { Canvas } from '@react-three/fiber'
 import Model from './components/Model';
@@ -6,21 +6,42 @@ import { PerspectiveCamera, Text } from '@react-three/drei';
 import Controls from './components/Controls';
 
 function App() {
+
+  const [jokes, setJokes] = useState<string[]>([])
+  const [activeJokeIndex, setActiveJokeIndex] = useState(0)
+
+  useEffect(() => {
+    fetch(("http://localhost:3000/jokes.json")).then((res) => res.json()).then(( jokes) => setJokes(jokes.jokes))
+  }, [])
+
+  const nextJoke = () => {
+    if(activeJokeIndex === jokes.length -1) {
+      setActiveJokeIndex(0)
+    } else {
+      setActiveJokeIndex(activeJokeIndex+1)
+    }
+  }
+
+  const randomJoke = () => {
+    const randomIndex = Math.floor(Math.random() * jokes.length)
+    setActiveJokeIndex(randomIndex)
+  }
+
   return (
     <div className="app">
       <header className="header">
         <h1>Can I joke on you?</h1>
       </header>
       <main className='scene'>
-        <Controls />
+        <Controls onNextClick={nextJoke} onRandomClick={randomJoke}/>
         <Canvas  shadows>
         <Text
           position={[0, 24, 0]}
           fontSize={1.2}
           color="black"
-          maxWidth={40}
+          maxWidth={35}
         >
-          "What do you call a factory that makes okay products?" "A satisfactory."
+         {`"${jokes[activeJokeIndex]}"`}
      </Text>
         <PerspectiveCamera makeDefault position={[0, 20, 18]} fov={75} aspect={window.innerWidth / window.innerHeight} near={0.01} far={1000} rotation={[-15 * Math.PI/180, 0, 0]} />
           <hemisphereLight intensity={2} color="#ffffff" groundColor="#8d8d8d" position={[0, 50, 0]} />

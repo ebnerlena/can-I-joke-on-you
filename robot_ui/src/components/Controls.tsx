@@ -1,9 +1,13 @@
-const Controls = () => {
+type Props = {
+    onNextClick: () => void
+    onRandomClick: () => void
+}
+const Controls: React.FC<Props> = ({onNextClick, onRandomClick}) => {
     return (
         <div className="controls">
             <button className="btn">Play/Pause</button>
-            <button className="btn">Next</button>
-            <button className="btn">Random</button>
+            <button className="btn" onClick={onNextClick}>Next</button>
+            <button className="btn" onClick={onRandomClick}>Random</button>
         </div>
     )
 }
