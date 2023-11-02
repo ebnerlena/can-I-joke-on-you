@@ -12,35 +12,40 @@ function App() {
 
   useEffect(() => {
     fetch(("http://localhost:3000/jokes.json")).then((res) => res.json()).then(( jokes) => setJokes(jokes.jokes))
+
+    window.speechSynthesis.cancel()
   }, [])
 
 
 
+  const speakJoke = () => {
+    const synth = window.speechSynthesis;
+    const voices = synth.getVoices();
+
+    console.log(voices)
+    console.log(voices.findIndex((voice) => voice.name.includes("Alicia"))) // alicia, zac
+
+    const msg = new SpeechSynthesisUtterance(jokes[activeJokeIndex])
+    const voiceIndex =  174 // zac = 266 , alicia = 174//13300
+    msg.rate = 1
+    msg.pitch = 1.2
+    msg.voice = voices[voiceIndex];
+    msg.lang = voices[voiceIndex]?.lang;
+
+    window.speechSynthesis.speak(msg)
+  }
+
 
   useEffect(() => {
-    const speakJoke = () => {
-      const synth = window.speechSynthesis;
-      const voices = synth.getVoices();
-
-      console.log(voices)
-      console.log(voices.findIndex((voice) => voice.name.includes("Alicia"))) // alicia, zac
-
-      const msg = new SpeechSynthesisUtterance(jokes[activeJokeIndex])
-      const voiceIndex =  266 // zac = 266 , alicia = 174//13300
-      msg.rate = 0.8
-      msg.pitch = 1.4
-      msg.voice = voices[voiceIndex];
-      msg.lang = voices[voiceIndex].lang;
-
-      window.speechSynthesis.speak(msg)
-    }
+    if(jokes.length <= 0) return 
 
     setTimeout(() => speakJoke(), 500)
-
-  }, [activeJokeIndex, jokes])
+  }, [activeJokeIndex])
 
 
   const nextJoke = () => {
+    window.speechSynthesis.cancel()
+
     if(activeJokeIndex === jokes.length -1) {
       setActiveJokeIndex(0)
     } else {
@@ -49,8 +54,18 @@ function App() {
   }
 
   const randomJoke = () => {
+    window.speechSynthesis.cancel()
+
     const randomIndex = Math.floor(Math.random() * jokes.length)
     setActiveJokeIndex(randomIndex)
+  }
+
+  const playJoke = () => {
+    if(window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel()
+    } else {
+      speakJoke()
+    }
   }
 
   return (
@@ -59,7 +74,7 @@ function App() {
         <h1>Can I joke on you?</h1>
       </header>
       <main className='scene'>
-        <Controls onNextClick={nextJoke} onRandomClick={randomJoke}/>
+        <Controls onNextClick={nextJoke} onRandomClick={randomJoke} onPlayClick={playJoke}/>
         <Canvas  shadows>
         <Text
           position={[0, 24, 0]}
