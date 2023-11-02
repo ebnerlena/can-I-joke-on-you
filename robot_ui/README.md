@@ -37,3 +37,7 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 - React Three Fiber: 
   - https://www.npmjs.com/package/@react-three/fiber
   - https://docs.pmnd.rs/react-three-fiber/api/canvas
+- TTS Language choosing https://jankapunkt.github.io/easy-speech/
+
+## Notes 
+- TTS only works in firefox on Lena's laptop

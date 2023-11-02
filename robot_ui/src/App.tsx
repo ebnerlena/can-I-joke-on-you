@@ -14,6 +14,32 @@ function App() {
     fetch(("http://localhost:3000/jokes.json")).then((res) => res.json()).then(( jokes) => setJokes(jokes.jokes))
   }, [])
 
+
+
+
+  useEffect(() => {
+    const speakJoke = () => {
+      const synth = window.speechSynthesis;
+      const voices = synth.getVoices();
+
+      console.log(voices)
+      console.log(voices.findIndex((voice) => voice.name.includes("Alicia"))) // alicia, zac
+
+      const msg = new SpeechSynthesisUtterance(jokes[activeJokeIndex])
+      const voiceIndex =  266 // zac = 266 , alicia = 174//13300
+      msg.rate = 0.8
+      msg.pitch = 1.4
+      msg.voice = voices[voiceIndex];
+      msg.lang = voices[voiceIndex].lang;
+
+      window.speechSynthesis.speak(msg)
+    }
+
+    setTimeout(() => speakJoke(), 500)
+
+  }, [activeJokeIndex, jokes])
+
+
   const nextJoke = () => {
     if(activeJokeIndex === jokes.length -1) {
       setActiveJokeIndex(0)
