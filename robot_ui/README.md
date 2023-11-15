@@ -31,13 +31,16 @@ Your app is ready to be deployed!
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
 ## Resources
+
 - Robot Model: https://github.com/mrdoob/three.js/tree/master/examples/models/gltf/RobotExpressive
 - Three.js https://threejs.org/examples/#webgl_animation_skinning_morph
 - Gltfjsx: https://github.com/pmndrs/gltfjsx
-- React Three Fiber: 
+- React Three Fiber:
   - https://www.npmjs.com/package/@react-three/fiber
   - https://docs.pmnd.rs/react-three-fiber/api/canvas
 - TTS Language choosing https://jankapunkt.github.io/easy-speech/
+- MediaPipe/tasks-vision package https://www.npmjs.com/package/@mediapipe/tasks-vision
 
-## Notes 
+## Notes
+
 - TTS only works in firefox on Lena's laptop

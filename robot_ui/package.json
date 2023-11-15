@@ -1,51 +1,62 @@
 {
-  "name": "talking-robot",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@react-three/drei": "^9.88.4",
-    "@react-three/fiber": "^8.15.9",
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.59",
-    "@types/react": "^18.2.31",
-    "@types/react-dom": "^18.2.14",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "react-three-fiber": "^6.0.13",
-    "three": "^0.157.0",
-    "typescript": "^4.9.5",
-    "web-vitals": "^2.1.4"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "devDependencies": {
-    "@babel/plugin-transform-private-property-in-object": "^7.22.11",
-    "@types/three": "^0.157.2"
-  }
+	"name": "talking-robot",
+	"version": "0.1.0",
+	"private": true,
+	"dependencies": {
+		"@mediapipe/tasks-vision": "^0.10.7",
+		"@react-three/drei": "^9.88.4",
+		"@react-three/fiber": "^8.15.9",
+		"@testing-library/jest-dom": "^5.17.0",
+		"@testing-library/react": "^13.4.0",
+		"@testing-library/user-event": "^13.5.0",
+		"@types/jest": "^27.5.2",
+		"@types/node": "^16.18.59",
+		"@types/react": "^18.2.31",
+		"@types/react-dom": "^18.2.14",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0",
+		"react-scripts": "5.0.1",
+		"react-three-fiber": "^6.0.13",
+		"react-webcam": "^7.2.0",
+		"three": "^0.157.0",
+		"typescript": "^4.9.5",
+		"web-vitals": "^2.1.4"
+	},
+	"scripts": {
+		"start": "react-scripts start",
+		"build": "react-scripts build",
+		"test": "react-scripts test",
+		"eject": "react-scripts eject"
+	},
+	"eslintConfig": {
+		"extends": [
+			"react-app",
+			"react-app/jest",
+			"prettier"
+		]
+	},
+	"browserslist": {
+		"production": [
+			">0.2%",
+			"not dead",
+			"not op_mini all"
+		],
+		"development": [
+			"last 1 chrome version",
+			"last 1 firefox version",
+			"last 1 safari version"
+		]
+	},
+	"devDependencies": {
+		"@babel/plugin-transform-private-property-in-object": "^7.22.11",
+		"@types/three": "^0.157.2",
+		"eslint": "^8.53.0",
+		"eslint-config-airbnb": "^19.0.4",
+		"eslint-config-prettier": "^9.0.0",
+		"eslint-plugin-import": "^2.29.0",
+		"eslint-plugin-prettier": "^5.0.1",
+		"eslint-plugin-react": "^7.33.2",
+		"eslint-plugin-react-hooks": "^4.6.0",
+		"prettier": "^3.0.3"
+	}
 }
