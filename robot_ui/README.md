@@ -1,6 +1,10 @@
 # UI for interacting with robot
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Get Started
+
+- `cd robot_ui`
+- `npm i`
+- `npm run start`
 
 ## Commands
 
