@@ -40,8 +40,8 @@ const FaceLandmarkerDetection = () => {
 	};
 
 	return (
-		<div className="face-landmark-detection">
-			<div className="face-landmark-detection__buttons">
+		<div className="absolute bottom-4 right-4 z-10">
+			<div className="flex gap-1 pb-2 w-full items-center justify-center">
 				<button className="btn" onClick={calibrationStatus === CalibrationStatus.DOING ? stopCalibration : calibrate}>
 					{calibrationStatus === CalibrationStatus.DOING ? 'Stop calibration' : 'Calibrate'}
 				</button>

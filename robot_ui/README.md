@@ -4,7 +4,7 @@
 
 - `cd robot_ui`
 - `npm i`
-- `npm run start`
+- `npm run dev`
 
 ## Commands
 
@@ -14,25 +14,6 @@
 - BMO Cute, idle animation: https://sketchfab.com/3d-models/bmo-cute-model-3d-free-download-fe780b22c5b04ad0b0d6360687adf623
 - Billy-tankMaterial: has idle and dance animation
 - Expressive Robot from three.js Example has best animations
-
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
 ## Resources
 
