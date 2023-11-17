@@ -1,17 +1,21 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CalibrationStatus, useFaceLandmarkDetector } from '../utils/useDetector';
 import Webcam from 'react-webcam';
 
-const FaceLandmarkerDetection = () => {
+type Props = {
+	vidoeHeight?: number;
+	videoWidth?: number;
+};
+
+const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, vidoeHeight }) => {
 	const webcamRef = useRef<Webcam>(null);
+	const [error, setError] = useState<string | null>(null);
 
 	const {
 		enableWebcam,
 		isInitialized,
-		mood,
-		smileDegree,
 		calibrationStatus,
 		calibrate,
 		stopCalibration,
@@ -20,19 +24,23 @@ const FaceLandmarkerDetection = () => {
 		webcamEnabled,
 		setVideoNode,
 	} = useFaceLandmarkDetector();
-	console.log('Mood: ' + mood, 'Smile Degree: ' + smileDegree);
 
 	useEffect(() => {
 		if (webcamRef.current) {
-			console.log(webcamRef.current.video);
-
+			console.log(webcamRef.current);
 			if (webcamRef.current.video) setVideoNode(webcamRef.current.video);
+		}
+
+		if (!webcamRef.current?.state.hasUserMedia) {
+			setError('Webcame not enabled. Please allow and enable.');
+		} else {
+			setError(null);
 		}
 	}, []);
 
 	const inputResolution = {
-		width: 1080 / 4,
-		height: 900 / 4,
+		width: videoWidth ?? 1080 / 4,
+		height: vidoeHeight ?? 900 / 4,
 	};
 
 	const videoConstraints = {
@@ -42,18 +50,13 @@ const FaceLandmarkerDetection = () => {
 	};
 
 	return (
-		<div className="absolute bottom-4 right-4 z-10">
+		<div className="">
 			<div className="flex gap-1 pb-2 w-full items-center justify-center">
-				<button className="btn" onClick={calibrationStatus === CalibrationStatus.DOING ? stopCalibration : calibrate}>
-					{calibrationStatus === CalibrationStatus.DOING ? 'Stop calibration' : 'Calibrate'}
-				</button>
-				<button className="btn" onClick={predictWebcam}>
-					Predict
-				</button>
+				{error && <p className="text-red-600 text-xl font-bold">Error: {error} </p>}
 			</div>
 			<Webcam ref={webcamRef} videoConstraints={videoConstraints} />
 		</div>
 	);
 };
 
-export default FaceLandmarkerDetection;
+export default FaceLandmarkerCalibration;
