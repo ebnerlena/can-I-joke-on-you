@@ -27,7 +27,7 @@ export enum Mood {
 	BIG_SMILE,
 }
 
-type FaceLandmarkerBlendValues = {
+export type FaceLandmarkerBlendValues = {
 	mouthPressLeft: number;
 	mouthPressRight: number;
 	mouthSmileLeft: number;
