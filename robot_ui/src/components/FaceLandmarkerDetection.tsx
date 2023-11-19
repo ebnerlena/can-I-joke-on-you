@@ -9,12 +9,12 @@ const FaceLandmarkerDetection = () => {
 	const webcamRef = useRef<Webcam>(null);
 
 	const {
-		enableWebcam,
+		// enableWebcam,
 		isInitialized,
 		mood,
 		smileDegree,
 		calibrationStatus,
-		calibrate,
+		startCalibration,
 		stopCalibration,
 		predictWebcam,
 		webcamRunning,
@@ -25,8 +25,6 @@ const FaceLandmarkerDetection = () => {
 
 	useEffect(() => {
 		if (webcamRef.current) {
-			console.log(webcamRef.current.video);
-
 			if (webcamRef.current.video) setVideoNode(webcamRef.current.video);
 		}
 	}, []);
@@ -45,7 +43,9 @@ const FaceLandmarkerDetection = () => {
 	return (
 		<div className="absolute bottom-4 right-4 z-10">
 			<div className="flex gap-1 pb-2 w-full items-center justify-center">
-				<button className="btn" onClick={calibrationStatus === CalibrationStatus.DOING ? stopCalibration : calibrate}>
+				<button
+					className="btn"
+					onClick={calibrationStatus === CalibrationStatus.DOING ? stopCalibration : startCalibration}>
 					{calibrationStatus === CalibrationStatus.DOING ? 'Stop calibration' : 'Calibrate'}
 				</button>
 				<button className="btn" onClick={predictWebcam}>

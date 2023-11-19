@@ -3,9 +3,14 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 // Calibration Store
-
+export const initialBlendValues = {
+	mouthPressLeft: 0,
+	mouthPressRight: 0,
+	mouthSmileLeft: 0,
+	mouthSmileRight: 0,
+};
 interface CalibrationStore {
-	blendValues: FaceLandmarkerBlendValues | undefined;
+	blendValues: FaceLandmarkerBlendValues;
 	setBlendValues: (blendValues: FaceLandmarkerBlendValues) => void;
 
 	reset: () => void;
@@ -14,12 +19,12 @@ interface CalibrationStore {
 export const useCalibrationStore = create<CalibrationStore>()(
 	persist(
 		(set) => ({
-			blendValues: undefined,
+			blendValues: initialBlendValues,
 			setBlendValues: (blendValues) => set(() => ({ blendValues: blendValues })),
 
 			reset: () =>
 				set(() => ({
-					blendValues: undefined,
+					blendValues: initialBlendValues,
 				})),
 		}),
 		{
