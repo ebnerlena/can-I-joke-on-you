@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { CalibrationStatus, useFaceLandmarkDetector } from '../utils/useDetector';
+import { useFaceLandmarkDetector } from '../utils/useDetector';
 import Webcam from 'react-webcam';
 
 type Props = {
@@ -13,30 +13,23 @@ const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, vidoeHeight })
 	const webcamRef = useRef<Webcam>(null);
 	const [error, setError] = useState<string | null>(null);
 
-	const {
-		enableWebcam,
-		isInitialized,
-		calibrationStatus,
-		calibrate,
-		stopCalibration,
-		predictWebcam,
-		webcamRunning,
-		webcamEnabled,
-		setVideoNode,
-	} = useFaceLandmarkDetector();
+	const { activateWebcamStream, startCalibration, setVideoNode } = useFaceLandmarkDetector();
 
 	useEffect(() => {
 		if (webcamRef.current) {
-			console.log(webcamRef.current);
 			if (webcamRef.current.video) setVideoNode(webcamRef.current.video);
 		}
+	}, []);
 
-		if (!webcamRef.current?.state.hasUserMedia) {
-			setError('Webcame not enabled. Please allow and enable.');
+	useEffect(() => {
+		if (!webcamRef.current?.state.hasUserMedia || !webcamRef.current.video) {
+			setError('Webcam not enabled. Please allow and enable.');
 		} else {
 			setError(null);
+
+			activateWebcamStream(startCalibration);
 		}
-	}, []);
+	}, [webcamRef.current?.state]);
 
 	const inputResolution = {
 		width: videoWidth ?? 1080 / 4,

@@ -4,6 +4,7 @@ import { FaceLandmarkerBlendValues } from '@/types/FaceLandmarkerBlendValues';
 import { CalibrationStatus } from '@/types/CalibrationStatus';
 import { Mood } from '@/types/Mood';
 import { initialBlendValues, useCalibrationStore } from '@/store/store';
+import { FaceLandmarkerService, faceLandmarkerService } from './faceLandMarkerService';
 
 interface FaceLandmarkDetectorType {
 	calibrationStatus: CalibrationStatus;
@@ -12,6 +13,7 @@ interface FaceLandmarkDetectorType {
 	mood: Mood;
 	smileDegree: number;
 	isInitialized: boolean;
+	activateWebcamStream: (callback: () => void) => void;
 	startCalibration: () => void;
 	stopCalibration: () => void;
 	predictWebcam: () => void;
@@ -38,7 +40,6 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	const [faceLandmarker, setFaceLandmarker] = useState<FaceLandmarker>();
 	const [isInitialized, setIsInitialized] = useState<boolean>(false);
 	const [video, setVideo] = useState<HTMLVideoElement | null>(null);
-	const [runningMode] = useState<'VIDEO' | 'IMAGE'>('VIDEO');
 	const [webcamRunning, setWebcamRunning] = useState<boolean>(false);
 	const [webcamEnabled, setWebcamEnabled] = useState<boolean>(false);
 	const [calibrationFrames, setCalibrationFrames] = useState<number>(0);
@@ -53,25 +54,12 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	const setBlendValuesFromCalibration = useCalibrationStore((state) => state.setBlendValues);
 	const blendValuesFromCalibration = useCalibrationStore((state) => state.blendValues);
 
+	// Refs
 	const calibrateRequestRef = useRef<number>();
 	const predictRequestRef = useRef<number>();
 
-	const initFacelandmarks = async () => {
-		const vision = await FilesetResolver.forVisionTasks(
-			'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm',
-		);
-
-		const landmarker = await FaceLandmarker.createFromModelPath(
-			vision,
-			'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
-		);
-
-		await landmarker.setOptions({
-			runningMode: runningMode,
-			numFaces: 1,
-			outputFaceBlendshapes: true,
-		});
-
+	const initFacelandmarks = useCallback(async () => {
+		const landmarker = faceLandmarkerService.faceLandmarker;
 		setFaceLandmarker(landmarker);
 		setIsInitialized(true);
 
@@ -79,24 +67,23 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 			setCalibrationStatus(CalibrationStatus.READY);
 			setWebcamRunning(true);
 			setWebcamEnabled(true);
-			activateWebcamStream();
 		}
-	};
+	}, []);
 
 	const isWebcamIsEnabled = (): boolean => {
 		return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
 	};
 
 	const doCalibration = useCallback(async () => {
-		console.log('doCalibration', calibrationStatus);
-		if (!faceLandmarker || !video) return;
+		console.log('doCalibration');
+		if (!faceLandmarkerService.faceLandmarker || !video) return;
 
 		let startTimeMs = performance.now();
 		let results: FaceLandmarkerResult | null = null;
 
 		if (lastVideoTime !== video.currentTime) {
 			lastVideoTime = video.currentTime;
-			results = faceLandmarker.detectForVideo(video, startTimeMs);
+			results = faceLandmarkerService.faceLandmarker.detectForVideo(video, startTimeMs);
 			console.log(results);
 		}
 
@@ -114,7 +101,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 			}
 		}
 		setCalibrationFrames(calibrationFrames + 1);
-	}, [calibrationBlendValues, calibrationFrames, calibrationStatus, faceLandmarker, video]);
+	}, [calibrationBlendValues, calibrationFrames, video]);
 
 	const storeCalibrations = useCallback(async () => {
 		console.log('storeCalibrations', calibrationStatus);
@@ -139,18 +126,18 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	}, [calibrationStatus, storeCalibrations]);
 
 	const startCalibration = useCallback(() => {
-		console.log('calibrate');
-		if (!faceLandmarker || !video) {
-			console.log('Wait! faceLandmarker not loaded yet.');
+		console.log('startCalibration');
+		if (!video) {
+			console.log('Wait! video not loaded yet.');
 			return;
 		}
 
-		setCalibrationStatus(CalibrationStatus.DOING);
 		setCalibrationBlendValues(initialDuringCalibrationBlendValues);
 		setCalibrationFrames(0);
+		setCalibrationStatus(CalibrationStatus.DOING);
 
 		setTimeout(stopCalibration, 4000);
-	}, [faceLandmarker, stopCalibration, video]);
+	}, [stopCalibration, video]);
 
 	const updateBlendValues = (faceBlendshapes: any) => {
 		console.log('updateBlendValues', faceBlendshapes);
@@ -215,13 +202,13 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	// TODO call this when video is enabled
 	const predictWebcam = () => {
 		console.log('predictWebcam');
-		if (!faceLandmarker || !video) return;
+		if (!faceLandmarkerService.faceLandmarker || !video) return;
 		let startTimeMs = performance.now();
 		let results: FaceLandmarkerResult | null = null;
 
 		if (lastVideoTime !== video.currentTime) {
 			lastVideoTime = video.currentTime;
-			results = faceLandmarker.detectForVideo(video, startTimeMs);
+			results = faceLandmarkerService.faceLandmarker.detectForVideo(video, startTimeMs);
 		}
 		if (results && results.faceBlendshapes?.length > 0) {
 			const { faceBlendshapes } = results;
@@ -235,17 +222,13 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		// }
 	};
 
-	const activateWebcamStream = () => {
+	const activateWebcamStream = (callback: () => void) => {
 		console.log('activateWebcamStream');
-		if (!faceLandmarker || !video) {
-			console.log('Wait! faceLandmarker not loaded yet.');
+		if (video === null) {
+			console.log('Wait! video not loaded yet.');
 			return;
 		}
-		// if (webcamRunning === true) {
-		// 	setWebcamRunning(false);
-		// } else {
-		// 	setWebcamRunning(true);
-		// }
+
 		// getUsermedia parameters.
 		const constraints = {
 			video: true,
@@ -253,7 +236,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		// Activate the webcam stream.
 		navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
 			video.srcObject = stream;
-			video.addEventListener('loadeddata', predictWebcam);
+			video.addEventListener('loadeddata', callback);
 		});
 	};
 
@@ -264,13 +247,15 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	}, [calibrationStatus, doCalibration]);
 
 	useEffect(() => {
+		if (!video) return;
+
 		initFacelandmarks();
 
 		return () => {
 			calibrateRequestRef.current && cancelAnimationFrame(calibrateRequestRef.current);
 			predictRequestRef.current && cancelAnimationFrame(predictRequestRef.current);
 		};
-	}, []);
+	}, [initFacelandmarks, video]);
 
 	return {
 		calibrationStatus: calibrationStatus,
@@ -281,7 +266,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		isInitialized: isInitialized,
 		startCalibration: startCalibration,
 		stopCalibration: stopCalibration,
-		// enableWebcam: enableWebcam,
+		activateWebcamStream: activateWebcamStream,
 		predictWebcam: predictWebcam,
 		setVideoNode: (video: HTMLVideoElement) => setVideo(video),
 	};
