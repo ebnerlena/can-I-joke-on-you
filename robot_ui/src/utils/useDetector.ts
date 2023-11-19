@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import { FaceLandmarker, FaceLandmarkerResult, FilesetResolver } from '@mediapipe/tasks-vision';
+import { FaceLandmarkerBlendValues } from '@/types/FaceLandmarkerBlendValues';
+import { CalibrationStatus } from '@/types/CalibrationStatus';
+import { Mood } from '@/types/Mood';
 
 interface FaceLandmarkDetectorType {
 	calibrationStatus: CalibrationStatus;
@@ -14,25 +17,6 @@ interface FaceLandmarkDetectorType {
 	predictWebcam: () => void;
 	setVideoNode: (video: HTMLVideoElement) => void;
 }
-
-export enum CalibrationStatus {
-	NOT_READY,
-	READY,
-	DOING,
-	DONE,
-}
-export enum Mood {
-	NEUTRAL,
-	SLIGHT_SMILE,
-	BIG_SMILE,
-}
-
-export type FaceLandmarkerBlendValues = {
-	mouthPressLeft: number;
-	mouthPressRight: number;
-	mouthSmileLeft: number;
-	mouthSmileRight: number;
-};
 
 const initialFaceLandmarkerBlendValues = {
 	mouthPressLeft: 0,

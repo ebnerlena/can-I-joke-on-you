@@ -1,4 +1,4 @@
-import { FaceLandmarkerBlendValues } from '@/utils/useDetector';
+import { FaceLandmarkerBlendValues } from '@/types/FaceLandmarkerBlendValues';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 

@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { CalibrationStatus, useFaceLandmarkDetector } from '../utils/useDetector';
+import { useFaceLandmarkDetector } from '../utils/useDetector';
 import Webcam from 'react-webcam';
+import { CalibrationStatus } from '@/types/CalibrationStatus';
 
 const FaceLandmarkerDetection = () => {
 	const webcamRef = useRef<Webcam>(null);
