@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import Model from './Model';
-import { Canvas } from 'react-three-fiber';
+import { Canvas } from '@react-three/fiber';
 import { PerspectiveCamera, Text } from '@react-three/drei';
 import Controls from './Controls';
 import FaceLandmarkerDetection from './FaceLandmarkerDetection';
@@ -72,14 +72,16 @@ const PlayJokes = () => {
 			<Controls onNextClick={nextJoke} onRandomClick={randomJoke} onPlayClick={playJoke} />
 			<FaceLandmarkerDetection />
 			<Canvas shadows className="w-full">
-				<Text position={[0, 24, 0]} fontSize={1.2} color="black" maxWidth={35}>
-					{`"${jokes[activeJokeIndex]}"`}
-				</Text>
+				<mesh>
+					<Text position={[0, 24, 0]} color="black" maxWidth={35}>
+						{`"${jokes[activeJokeIndex]}"`}
+					</Text>
+				</mesh>
+
 				<PerspectiveCamera
 					makeDefault
 					position={[0, 20, 18]}
 					fov={75}
-					aspect={window.innerWidth / window.innerHeight}
 					near={0.01}
 					far={1000}
 					rotation={[(-15 * Math.PI) / 180, 0, 0]}

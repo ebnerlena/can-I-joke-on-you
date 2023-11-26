@@ -24,6 +24,7 @@ const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, vidoeHeight })
 	useEffect(() => {
 		if (!webcamRef.current?.state.hasUserMedia || !webcamRef.current.video) {
 			setError('Webcam not enabled. Please allow and enable.');
+			return;
 		} else {
 			setError(null);
 

@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 const EndScreen = () => {
 	return (
 		<div className="h-full w-full flex flex-col items-center justify-center gap-8 p-12">
@@ -6,6 +8,10 @@ const EndScreen = () => {
 				<p>Thank you very much for participating in our user study!</p>
 				<p>For our evaluating we kindly ask you to fill out the following questionnaire:</p>
 				<p>TODO</p>
+
+				<Link href="/" className="btn">
+					Back to Start
+				</Link>
 			</div>
 		</div>
 	);

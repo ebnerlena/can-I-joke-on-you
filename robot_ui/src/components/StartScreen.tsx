@@ -1,8 +1,6 @@
 'use client';
 
-import { useApplicationStore } from '@/store/store';
-import { ApplicationStatus } from '@/types/ApplicationStatus';
-import { useCallback } from 'react';
+import Link from 'next/link';
 import Webcam from 'react-webcam';
 
 const StartScreen = () => {
@@ -17,12 +15,6 @@ const StartScreen = () => {
 		facingMode: 'user',
 	};
 
-	const setApplicationStatus = useApplicationStore((state) => state.setStatus);
-
-	const onStartCalibration = useCallback(() => {
-		setApplicationStatus(ApplicationStatus.CALIBRATION);
-	}, [setApplicationStatus]);
-
 	return (
 		<div className="h-full w-full flex flex-col items-center justify-center gap-8 p-12">
 			<div className="text-justify text-xl max-w-[800px]">
@@ -33,9 +25,9 @@ const StartScreen = () => {
 				<p className="pt-8">Press START CALIBRATION whenever you are ready.</p>
 			</div>
 
-			<button className="btn text-3xl" onClick={onStartCalibration}>
+			<Link href="/calibration" className="btn text-3xl">
 				Start Calibration
-			</button>
+			</Link>
 
 			<Webcam videoConstraints={videoConstraints} />
 		</div>
