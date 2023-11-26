@@ -45,7 +45,7 @@ const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, vidoeHeight })
 	return (
 		<div className="">
 			<div className="flex gap-1 pb-2 w-full items-center justify-center">
-				{error && <p className="text-red-600 text-xl font-bold">Error: {error} </p>}
+				{/* {error && <p className="text-red-600 text-xl font-bold">Waiting for webcam... {error} </p>} */}
 			</div>
 			<Webcam ref={webcamRef} videoConstraints={videoConstraints} />
 		</div>

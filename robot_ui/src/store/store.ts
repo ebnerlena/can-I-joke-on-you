@@ -1,3 +1,4 @@
+import { ApplicationStatus } from '@/types/ApplicationStatus';
 import { FaceLandmarkerBlendValues } from '@/types/FaceLandmarkerBlendValues';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
@@ -32,3 +33,13 @@ export const useCalibrationStore = create<CalibrationStore>()(
 		},
 	),
 );
+
+interface ApplicationStore {
+	status: ApplicationStatus;
+	setStatus: (status: ApplicationStatus) => void;
+}
+
+export const useApplicationStore = create<ApplicationStore>()((set) => ({
+	status: ApplicationStatus.START,
+	setStatus: (status) => set(() => ({ status: status })),
+}));

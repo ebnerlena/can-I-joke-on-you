@@ -2,11 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import FaceLandmarkerCalibration from './FaceLandmarkerCalibration';
+import { useApplicationStore } from '@/store/store';
+import { ApplicationStatus } from '@/types/ApplicationStatus';
+
+const CALIBRATION_TIME = 5;
 
 const CalibrationScreen = () => {
-	const [secondsLeft, setSecondsLeft] = useState(5);
+	const [secondsLeft, setSecondsLeft] = useState(CALIBRATION_TIME);
+	const setApplicationStatus = useApplicationStore((state) => state.setStatus);
 
 	useEffect(() => {
+		if (secondsLeft <= 0) {
+			setApplicationStatus(ApplicationStatus.MAIN);
+			return;
+		}
+
 		const countdownInterval = setInterval(() => {
 			if (secondsLeft > 0) {
 				setSecondsLeft((prevSeconds) => prevSeconds - 1);
@@ -15,9 +25,7 @@ const CalibrationScreen = () => {
 
 		// Clear the interval when the component unmounts
 		return () => clearInterval(countdownInterval);
-	}, [secondsLeft]);
-
-	// TODO do calibration here and store them globally with zustand
+	}, [secondsLeft, setApplicationStatus]);
 
 	return (
 		<div className="w-full  h-full flex flex-col items-center justify-center gap-8 p-12">

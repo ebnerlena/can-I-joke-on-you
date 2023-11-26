@@ -35,6 +35,7 @@ const initialDuringCalibrationBlendValues = {
 };
 
 let lastVideoTime = -1;
+let calibartionStarted = false;
 
 export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	const [faceLandmarker, setFaceLandmarker] = useState<FaceLandmarker>();
@@ -241,7 +242,8 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	};
 
 	useEffect(() => {
-		if (calibrationStatus === CalibrationStatus.DOING) {
+		if (calibrationStatus === CalibrationStatus.DOING && !calibartionStarted) {
+			calibartionStarted = true;
 			requestAnimationFrame(doCalibration);
 		}
 	}, [calibrationStatus, doCalibration]);
