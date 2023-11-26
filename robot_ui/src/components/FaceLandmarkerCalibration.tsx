@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useFaceLandmarkDetector } from '../utils/useDetector';
 import Webcam from 'react-webcam';
+import { CalibrationStatus } from '@/types/CalibrationStatus';
+import { useRouter } from 'next/navigation';
 
 type Props = {
 	vidoeHeight?: number;
@@ -13,7 +15,8 @@ const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, vidoeHeight })
 	const webcamRef = useRef<Webcam>(null);
 	const [error, setError] = useState<string | null>(null);
 
-	const { activateWebcamStream, startCalibration, setVideoNode } = useFaceLandmarkDetector();
+	const { activateWebcamStream, startCalibration, setVideoNode, calibrationStatus } = useFaceLandmarkDetector();
+	const router = useRouter();
 
 	useEffect(() => {
 		if (webcamRef.current) {
@@ -31,6 +34,12 @@ const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, vidoeHeight })
 			activateWebcamStream(startCalibration);
 		}
 	}, [webcamRef.current?.state]);
+
+	useEffect(() => {
+		if (calibrationStatus === CalibrationStatus.DONE) {
+			router.push('/main');
+		}
+	}, [calibrationStatus, router]);
 
 	const inputResolution = {
 		width: videoWidth ?? 1080 / 4,

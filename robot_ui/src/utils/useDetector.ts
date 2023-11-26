@@ -109,8 +109,10 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		}
 		setCalibrationFrames(calibrationFrames + 1);
 
-		doCalibration();
-	}, [calibrationBlendValues, calibrationFrames, video]);
+		if (calibrationStatus === CalibrationStatus.DOING) {
+			calibrateRequestRef.current = requestAnimationFrame(doCalibration);
+		}
+	}, [calibrationBlendValues, calibrationFrames, calibrationStatus, video]);
 
 	const storeCalibrations = useCallback(async () => {
 		console.log('storeCalibrations', calibrationStatus, calibrationBlendValues);
@@ -133,7 +135,6 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		setCalibrationStatus(CalibrationStatus.DONE);
 		storeCalibrations();
 		setVideo(null);
-		video?.removeEventListener('loadeddata', startCalibration);
 	}, [calibrationStatus, storeCalibrations]);
 
 	const startCalibration = useCallback(() => {
@@ -147,7 +148,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		setCalibrationFrames(0);
 		setCalibrationStatus(CalibrationStatus.DOING);
 
-		setTimeout(stopCalibration, 4000);
+		setTimeout(stopCalibration, 5000);
 	}, [stopCalibration, video]);
 
 	// ************ Prediction ************
@@ -247,7 +248,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 			updateBlendValues(faceBlendshapes);
 		}
 
-		predictWebcam();
+		predictRequestRef.current = requestAnimationFrame(predictWebcam);
 	}, []);
 
 	const activateWebcamStream = (callback: () => void) => {
@@ -269,7 +270,6 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	};
 
 	// ************ UseEffects ************
-
 	useEffect(() => {
 		if (calibrationStatus === CalibrationStatus.DOING && !calibartionStarted) {
 			calibartionStarted = true;
@@ -278,7 +278,6 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	}, [calibrationStatus, doCalibration]);
 
 	useEffect(() => {
-		console.log('here', predictionStatus);
 		if (predictionStatus === CalibrationStatus.DOING) {
 			predictRequestRef.current = requestAnimationFrame(predictWebcam);
 		}

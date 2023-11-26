@@ -6,23 +6,14 @@ import { useApplicationStore } from '@/store/store';
 import { ApplicationStatus } from '@/types/ApplicationStatus';
 import { useRouter } from 'next/navigation';
 
-const CALIBRATION_TIME = 5;
-
 const CalibrationScreen = () => {
-	const [secondsLeft, setSecondsLeft] = useState(CALIBRATION_TIME);
+	const [secondsLeft, setSecondsLeft] = useState(0);
 
 	const router = useRouter();
 
 	useEffect(() => {
-		if (secondsLeft <= 0) {
-			router.push('/main');
-			return;
-		}
-
 		const countdownInterval = setInterval(() => {
-			if (secondsLeft > 0) {
-				setSecondsLeft((prevSeconds) => prevSeconds - 1);
-			}
+			setSecondsLeft((prevSeconds) => prevSeconds + 1);
 		}, 1000);
 
 		// Clear the interval when the component unmounts
@@ -34,7 +25,7 @@ const CalibrationScreen = () => {
 			<div className="text-justify text-xl">
 				<p>We are now doing the calibration on your face.</p>
 				<p>Please just try to keep a neutral face until we are finsihed.</p>
-				<p>Seconds left: {secondsLeft}</p>
+				<p>Seconds: {secondsLeft}</p>
 			</div>
 
 			<FaceLandmarkerCalibration videoWidth={1080 / 2} vidoeHeight={900 / 2} />
