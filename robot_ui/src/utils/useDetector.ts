@@ -39,6 +39,12 @@ const initialDuringCalibrationBlendValues = {
 let lastVideoTime = -1;
 let calibartionStarted = false;
 let smileDegrees: number[] = [];
+let calibrationBlendValues = {
+	mouthPressLeft: [],
+	mouthPressRight: [],
+	mouthSmileLeft: [],
+	mouthSmileRight: [],
+};
 
 export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	const [faceLandmarker, setFaceLandmarker] = useState<FaceLandmarker>();
@@ -52,9 +58,6 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	const [predictionStatus, setPredictionStatus] = useState<CalibrationStatus>(CalibrationStatus.NOT_READY);
 	const [mood, setMood] = useState<Mood>(Mood.NEUTRAL);
 	const [smileDegree, setSmileDegree] = useState<number>(0);
-	const [calibrationBlendValues, setCalibrationBlendValues] = useState<DuringCalibrationBlendValues>(
-		initialDuringCalibrationBlendValues,
-	);
 
 	// Global Store
 	const setBlendValuesFromCalibration = useCalibrationStore((state) => state.setBlendValues);
@@ -123,6 +126,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 		const tmpBlendValues = { ...initialBlendValues };
 
+		// use average of calibration values in store
 		for (var key in calibrationBlendValues) {
 			// @ts-ignore
 			const values = calibrationBlendValues[key];
@@ -136,9 +140,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		} else {
 			setSmileBlendValuesFromCalibration(tmpBlendValues);
 		}
-		setCalibrationBlendValues(initialDuringCalibrationBlendValues);
 	}, [
-		calibrationBlendValues,
 		calibrationStatus,
 		setBlendValuesFromCalibration,
 		setSmileBlendValuesFromCalibration,
@@ -159,12 +161,16 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 			console.log('Wait! video not loaded yet.');
 			return;
 		}
-
-		setCalibrationBlendValues(initialDuringCalibrationBlendValues);
+		calibrationBlendValues = {
+			mouthPressLeft: [],
+			mouthPressRight: [],
+			mouthSmileLeft: [],
+			mouthSmileRight: [],
+		};
 		setCalibrationFrames(0);
 		setCalibrationStatus(CalibrationStatus.DOING);
 
-		setTimeout(stopCalibration, 5000);
+		setTimeout(stopCalibration, 2000);
 	}, [stopCalibration, video]);
 
 	// ************ Prediction ************
@@ -183,7 +189,8 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 			if (blendName in blendFactors && blendValuesFromCalibration.hasOwnProperty(blendName)) {
 				// @ts-ignore
-				blendFactors[blendName] += blendScore / (blendValuesFromCalibration[blendName] / calibrationFrames); // @ts-ignore
+				blendFactors[blendName] += // @ts-ignore
+					blendScore / (smileBlendValuesFromCalibration[blendName] - blendValuesFromCalibration[blendName]);
 			}
 		}
 
@@ -192,40 +199,12 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 	const calculateMood = (blendValues: FaceLandmarkerBlendValues) => {
 		console.log('calculateMood');
-		// Calculate the mood and degree
-		let newMood = Mood.NEUTRAL;
-		let mouthPressFactor = (blendValues['mouthPressLeft'] + blendValues['mouthPressRight']) / 4;
-		if (mouthPressFactor > 1) {
-			newMood = Mood.SLIGHT_SMILE;
-		} else {
-			newMood = Mood.NEUTRAL;
-		}
-
-		let mouthSmileFactor = (blendValues['mouthSmileLeft'] + blendValues['mouthSmileRight']) / 500;
-		if (mouthSmileFactor > 1) {
-			newMood = Mood.BIG_SMILE;
-		}
-
-		console.log('new mood', Mood[newMood]);
-		setMood(newMood);
-
-		let tmpSmileDegree = 0;
-		if (mouthSmileFactor < 1) {
-			if (mouthPressFactor < 1) {
-				tmpSmileDegree = 0;
-			} else if (mouthPressFactor < 2) {
-				tmpSmileDegree = 1;
-			} else if (mouthPressFactor >= 2) {
-				tmpSmileDegree = 2;
-			}
-		} else if (mouthSmileFactor < 2) {
-			tmpSmileDegree = 3;
-		} else if (mouthSmileFactor >= 2) {
-			tmpSmileDegree = 4;
-		}
+		// Calculate smile degree
+		let tmpSmileDegree = (blendValues['mouthSmileLeft'] + blendValues['mouthSmileRight']) / 200;
+		tmpSmileDegree = Math.min(1, Math.max(0, smileDegree));
 
 		smileDegrees.push(tmpSmileDegree);
-		console.log('set smile degree', tmpSmileDegree);
+		console.log('set smile degree', tmpSmileDegree, smileDegrees);
 		setSmileDegree(tmpSmileDegree);
 	};
 
