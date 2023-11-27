@@ -12,7 +12,7 @@ export class FaceLandmarkerService {
 		if (typeof window === 'undefined') return;
 
 		this.init().then((landmarker) => {
-			console.log('facelandmaker instance initialized!', landmarker);
+			console.log('facelandmaker instance initialized!');
 			this.faceLandmarker = landmarker;
 		});
 	}

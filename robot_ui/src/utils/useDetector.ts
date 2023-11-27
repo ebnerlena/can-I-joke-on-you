@@ -11,7 +11,6 @@ interface FaceLandmarkDetectorType {
 	calibrationStatus: CalibrationStatus;
 	webcamRunning: boolean;
 	webcamEnabled: boolean;
-	mood: Mood;
 	smileDegree: number;
 	isInitialized: boolean;
 	activateWebcamStream: (callback: () => void) => void;
@@ -20,6 +19,7 @@ interface FaceLandmarkDetectorType {
 	startPrediction: () => void;
 	stopPrediction: () => void;
 	setVideoNode: (video: HTMLVideoElement) => void;
+	calculateBlendValuesOnSpectrum: (faceBlendshapes: any) => void;
 }
 
 type DuringCalibrationBlendValues = {
@@ -50,6 +50,7 @@ let calibrationBlendValues = {
 };
 
 let lastSmileDegreeHeadIdx = 0;
+let predictionRunning = false;
 
 export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	const [faceLandmarker, setFaceLandmarker] = useState<FaceLandmarker>();
@@ -58,8 +59,6 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	const [webcamRunning, setWebcamRunning] = useState<boolean>(false);
 	const [webcamEnabled, setWebcamEnabled] = useState<boolean>(false);
 	const [calibrationStatus, setCalibrationStatus] = useState<CalibrationStatus>(CalibrationStatus.NOT_READY);
-	const [predictionStatus, setPredictionStatus] = useState<CalibrationStatus>(CalibrationStatus.NOT_READY);
-	const [mood, setMood] = useState<Mood>(Mood.NEUTRAL);
 	const [smileDegree, setSmileDegree] = useState<number>(0);
 
 	// Global Store
@@ -80,7 +79,6 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 		if (isWebcamIsEnabled()) {
 			setCalibrationStatus(CalibrationStatus.READY);
-			setPredictionStatus(CalibrationStatus.READY);
 			setWebcamRunning(true);
 			setWebcamEnabled(true);
 		}
@@ -176,34 +174,37 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 	// ************ Prediction ************
 
-	const calculateBlendValuesOnSpectrum = (faceBlendshapes: any) => {
-		console.log('updateBlendValues', faceBlendshapes);
-		let blendFactors: FaceLandmarkerBlendValues = {
-			mouthPressLeft: 0,
-			mouthPressRight: 0,
-			mouthSmileLeft: 0,
-			mouthSmileRight: 0,
-		};
+	const calculateBlendValuesOnSpectrum = useCallback(
+		(faceBlendshapes: any) => {
+			console.log('calculateBlendValuesOnSpectrum', faceBlendshapes);
+			let blendFactors: FaceLandmarkerBlendValues = {
+				mouthPressLeft: 0,
+				mouthPressRight: 0,
+				mouthSmileLeft: 0,
+				mouthSmileRight: 0,
+			};
 
-		for (const key in faceBlendshapes[0].categories) {
-			let blendName = faceBlendshapes[0].categories[key].categoryName;
-			let blendScore = faceBlendshapes[0].categories[key].score;
+			for (const key in faceBlendshapes[0].categories) {
+				let blendName = faceBlendshapes[0].categories[key].categoryName;
+				let blendScore = faceBlendshapes[0].categories[key].score;
 
-			if (blendName in blendFactors && blendValuesFromCalibration.hasOwnProperty(blendName)) {
-				// @ts-ignore
-				blendFactors[blendName] += // @ts-ignore
-					blendScore / (smileBlendValuesFromCalibration[blendName] - blendValuesFromCalibration[blendName]);
+				if (blendName in blendFactors && blendValuesFromCalibration.hasOwnProperty(blendName)) {
+					// @ts-ignore
+					blendFactors[blendName] += // @ts-ignore
+						blendScore / (smileBlendValuesFromCalibration[blendName] - blendValuesFromCalibration[blendName]);
+				}
 			}
-		}
 
-		calculatSmileDegree(blendFactors);
-	};
+			calculateSmileDegree(blendFactors);
+		},
+		[blendValuesFromCalibration, smileBlendValuesFromCalibration],
+	);
 
-	const calculatSmileDegree = (blendValues: FaceLandmarkerBlendValues) => {
-		console.log('calculateMood');
+	const calculateSmileDegree = (blendValues: FaceLandmarkerBlendValues) => {
+		console.log('calculateSmileDegree');
 		// Calculate smile degree
-		let tmpSmileDegree = (blendValues['mouthSmileLeft'] + blendValues['mouthSmileRight']) / 200;
-		tmpSmileDegree = Math.min(1, Math.max(0, smileDegree));
+		let tmpSmileDegree = blendValues['mouthSmileLeft'] + blendValues['mouthSmileRight'] / 2;
+		tmpSmileDegree = Math.min(1, Math.max(0, tmpSmileDegree));
 
 		// Pushing smileDegree to shifting array
 		smileDegrees[lastSmileDegreeHeadIdx] = tmpSmileDegree;
@@ -214,6 +215,8 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		if (tmpAvgSmileDegree > currentMaxSmileDegree) {
 			currentAvgSmileDegree = tmpAvgSmileDegree;
 			currentMaxSmileDegree = Math.max(...smileDegrees);
+		} else {
+			console.log('else');
 		}
 
 		console.log('set smile degree', tmpSmileDegree, currentAvgSmileDegree, currentMaxSmileDegree);
@@ -221,20 +224,23 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 	const startPrediction = () => {
 		console.log('startPrediction');
-		setPredictionStatus(CalibrationStatus.DOING);
+		predictionRunning = true;
 		smileDegrees = Array(100).fill(0);
 		currentMaxSmileDegree = 0;
 		currentAvgSmileDegree = 0;
+
+		predictRequestRef.current = requestAnimationFrame(predictWebcam);
 	};
 
 	const stopPrediction = () => {
 		console.log('stopPrediction');
-		if (!faceLandmarker || !video) return;
+		if (!faceLandmarkerService.faceLandmarker || !video) return;
 
 		// TODO send max value to recommender
 		console.log('final max smile degree predicted', currentMaxSmileDegree);
-		setPredictionStatus(CalibrationStatus.DONE);
+		predictionRunning = false;
 		setSmileDegree(currentMaxSmileDegree);
+
 		return currentMaxSmileDegree;
 	};
 
@@ -248,14 +254,14 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 			lastVideoTime = video.currentTime;
 			results = faceLandmarkerService.faceLandmarker.detectForVideo(video, startTimeMs);
 		}
-		console.log(results);
 		if (results && results.faceBlendshapes?.length > 0) {
 			const { faceBlendshapes } = results;
 			calculateBlendValuesOnSpectrum(faceBlendshapes);
 		}
-
-		predictRequestRef.current = requestAnimationFrame(predictWebcam);
-	}, []);
+		if (predictionRunning) {
+			setTimeout(() => requestAnimationFrame(predictWebcam), 2000);
+		}
+	}, [video, calculateBlendValuesOnSpectrum]);
 
 	const activateWebcamStream = (callback: () => void) => {
 		console.log('activateWebcamStream', video);
@@ -284,12 +290,6 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	}, [calibrationStatus, doCalibration]);
 
 	useEffect(() => {
-		if (predictionStatus === CalibrationStatus.DOING) {
-			predictRequestRef.current = requestAnimationFrame(predictWebcam);
-		}
-	}, [predictionStatus, predictWebcam]);
-
-	useEffect(() => {
 		if (!video) return;
 
 		initFacelandmarks();
@@ -304,7 +304,6 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		calibrationStatus: calibrationStatus,
 		webcamRunning: webcamRunning,
 		webcamEnabled: webcamEnabled,
-		mood: mood,
 		smileDegree: smileDegree,
 		isInitialized: isInitialized,
 		startCalibration: startCalibration,
@@ -313,5 +312,6 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		startPrediction: startPrediction,
 		stopPrediction: stopPrediction,
 		setVideoNode: (video: HTMLVideoElement) => setVideo(video),
+		calculateBlendValuesOnSpectrum: calculateBlendValuesOnSpectrum,
 	};
 };

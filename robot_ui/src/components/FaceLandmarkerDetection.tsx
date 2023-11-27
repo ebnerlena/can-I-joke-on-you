@@ -3,13 +3,14 @@
 import { useEffect, useRef } from 'react';
 import { useFaceLandmarkDetector } from '../utils/useDetector';
 import Webcam from 'react-webcam';
+import { faceLandmarkerService } from '@/utils/faceLandMarkerService';
+import { FaceLandmarkerResult } from '@mediapipe/tasks-vision';
+let lastVideoTime = -1;
 
 const FaceLandmarkerDetection = () => {
 	const webcamRef = useRef<Webcam>(null);
-	const videoRef = useRef<HTMLVideoElement>(null);
 
 	const {
-		mood,
 		smileDegree,
 		calibrationStatus,
 		startCalibration,
@@ -18,8 +19,8 @@ const FaceLandmarkerDetection = () => {
 		stopPrediction,
 		setVideoNode,
 		activateWebcamStream,
+		calculateBlendValuesOnSpectrum,
 	} = useFaceLandmarkDetector();
-	console.log('Mood: ' + mood, 'Smile Degree: ' + smileDegree);
 
 	useEffect(() => {
 		if (webcamRef.current) {
@@ -51,10 +52,10 @@ const FaceLandmarkerDetection = () => {
 	return (
 		<div className="absolute bottom-4 right-4 z-10">
 			<div className="flex gap-1 pb-2 w-full items-center justify-center">
-				<button className="btn" onClick={undefined}>
+				<button className="btn" onClick={stopPrediction}>
 					Stop Prediction
 				</button>
-				<button className="btn" onClick={() => activateWebcamStream(startPrediction)}>
+				<button className="btn" onClick={startPrediction}>
 					Predict
 				</button>
 			</div>
