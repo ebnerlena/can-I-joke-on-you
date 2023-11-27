@@ -21,12 +21,16 @@ const StartScreen = () => {
 				<h2 className="font-bold pb-2">Welcome!</h2>
 				<p>Before you can start we do a short calibration of your face. </p>
 				<p>Please make sure your face is fully covered by your camera.</p>
-				<p>Additionally we ask you to keep a neutral face while calibrating.</p>
-				<p className="pt-8">Press START CALIBRATION whenever you are ready.</p>
+				<p>
+					Additionally we ask you to keep a <span className="font-bold">NEUTRAL</span> face while calibrating.
+				</p>
+				<p className="pt-8">
+					Press <span className="font-bold">START NEUTRAL CALIBRATION</span> whenever you are ready.
+				</p>
 			</div>
 
 			<Link href="/calibration" className="btn text-3xl">
-				Start Calibration
+				Start NEUTRAL Calibration
 			</Link>
 
 			<Webcam videoConstraints={videoConstraints} />

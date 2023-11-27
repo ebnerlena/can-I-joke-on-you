@@ -1,4 +1,5 @@
 import { ApplicationStatus } from '@/types/ApplicationStatus';
+import { CalibrationMode } from '@/types/CalibrationMode';
 import { FaceLandmarkerBlendValues } from '@/types/FaceLandmarkerBlendValues';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
@@ -13,6 +14,10 @@ export const initialBlendValues = {
 interface CalibrationStore {
 	blendValues: FaceLandmarkerBlendValues;
 	setBlendValues: (blendValues: FaceLandmarkerBlendValues) => void;
+	smileBlendValues: FaceLandmarkerBlendValues;
+	setSmileBlendValues: (smileBlendValues: FaceLandmarkerBlendValues) => void;
+	status: CalibrationMode; // 0 = normal calibration, 1 = smile calibration
+	setStatus: (status: CalibrationMode) => void;
 
 	reset: () => void;
 }
@@ -22,10 +27,16 @@ export const useCalibrationStore = create<CalibrationStore>()(
 		(set) => ({
 			blendValues: initialBlendValues,
 			setBlendValues: (blendValues) => set(() => ({ blendValues: blendValues })),
+			smileBlendValues: initialBlendValues,
+			setSmileBlendValues: (smileBlendValues) => set(() => ({ smileBlendValues: smileBlendValues })),
+			status: 0,
+			setStatus: (status) => set(() => ({ status: status })),
 
 			reset: () =>
 				set(() => ({
 					blendValues: initialBlendValues,
+					smileBlendValues: initialBlendValues,
+					status: CalibrationMode.NEUTRAL,
 				})),
 		}),
 		{

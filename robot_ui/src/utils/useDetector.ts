@@ -5,6 +5,7 @@ import { CalibrationStatus } from '@/types/CalibrationStatus';
 import { Mood } from '@/types/Mood';
 import { initialBlendValues, useCalibrationStore } from '@/store/store';
 import { FaceLandmarkerService, faceLandmarkerService } from './faceLandMarkerService';
+import { CalibrationMode } from '@/types/CalibrationMode';
 
 interface FaceLandmarkDetectorType {
 	calibrationStatus: CalibrationStatus;
@@ -58,6 +59,9 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	// Global Store
 	const setBlendValuesFromCalibration = useCalibrationStore((state) => state.setBlendValues);
 	const blendValuesFromCalibration = useCalibrationStore((state) => state.blendValues);
+	const calibrationStatusFromStore = useCalibrationStore((state) => state.status);
+	const smileBlendValuesFromCalibration = useCalibrationStore((state) => state.smileBlendValues);
+	const setSmileBlendValuesFromCalibration = useCalibrationStore((state) => state.setSmileBlendValues);
 
 	// Refs
 	const calibrateRequestRef = useRef<number>();
@@ -82,7 +86,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 	// ************ Calibration ************
 	const doCalibration = useCallback(async () => {
-		console.log('doCalibration');
+		// console.log('doCalibration');
 		if (!faceLandmarkerService.faceLandmarker || !video) return;
 
 		let startTimeMs = performance.now();
@@ -91,7 +95,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		if (lastVideoTime !== video.currentTime) {
 			lastVideoTime = video.currentTime;
 			results = faceLandmarkerService.faceLandmarker.detectForVideo(video, startTimeMs);
-			console.log(results);
+			// console.log(results);
 		}
 
 		if (!results || results.faceBlendshapes.length === 0) return;
@@ -115,7 +119,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	}, [calibrationBlendValues, calibrationFrames, calibrationStatus, video]);
 
 	const storeCalibrations = useCallback(async () => {
-		console.log('storeCalibrations', calibrationStatus, calibrationBlendValues);
+		console.log('storeCalibrations', calibrationStatus, calibrationBlendValues, calibrationStatusFromStore);
 
 		const tmpBlendValues = { ...initialBlendValues };
 
@@ -126,8 +130,20 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 			tmpBlendValues[key] = values.reduce((acc: any, num: any) => acc + num, 0) / values.length;
 		}
 
-		setBlendValuesFromCalibration(tmpBlendValues);
-	}, [calibrationBlendValues, calibrationStatus, setBlendValuesFromCalibration]);
+		// Distinguish between normal and smile calibration
+		if (calibrationStatusFromStore === CalibrationMode.NEUTRAL) {
+			setBlendValuesFromCalibration(tmpBlendValues);
+		} else {
+			setSmileBlendValuesFromCalibration(tmpBlendValues);
+		}
+		setCalibrationBlendValues(initialDuringCalibrationBlendValues);
+	}, [
+		calibrationBlendValues,
+		calibrationStatus,
+		setBlendValuesFromCalibration,
+		setSmileBlendValuesFromCalibration,
+		calibrationStatusFromStore,
+	]);
 
 	const stopCalibration = useCallback(() => {
 		console.log('stopCalibration', calibrationStatus);
@@ -271,8 +287,8 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 	// ************ UseEffects ************
 	useEffect(() => {
-		if (calibrationStatus === CalibrationStatus.DOING && !calibartionStarted) {
-			calibartionStarted = true;
+		if (calibrationStatus === CalibrationStatus.DOING) {
+			// calibartionStarted = true;
 			calibrateRequestRef.current = requestAnimationFrame(doCalibration);
 		}
 	}, [calibrationStatus, doCalibration]);

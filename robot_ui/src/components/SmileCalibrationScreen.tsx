@@ -1,12 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import FaceLandmarkerCalibration from './FaceLandmarkerCalibration';
-import { useApplicationStore } from '@/store/store';
-import { ApplicationStatus } from '@/types/ApplicationStatus';
 import { useRouter } from 'next/navigation';
+import FaceLandmarkerSmileCalibration from './FaceLandmarkerSmileCalibration';
 
-const CalibrationScreen = () => {
+const SmileCalibrationScreen = () => {
 	const [secondsLeft, setSecondsLeft] = useState(0);
 
 	const router = useRouter();
@@ -23,16 +21,16 @@ const CalibrationScreen = () => {
 	return (
 		<div className="w-full  h-full flex flex-col items-center justify-center gap-8 p-12">
 			<div className="text-justify text-xl">
-				<p>We are now doing the calibration on your face.</p>
 				<p>
-					Please just try to keep a <span className="font-bold">NEUTRAL</span> face until we are finsihed.
+					We are now doing the <span className="font-bold">SMILE</span> calibration on your face.
 				</p>
+				<p>Please SMILE as big as you can until we are finsihed.</p>
 				<p>Seconds: {secondsLeft}</p>
 			</div>
 
-			<FaceLandmarkerCalibration videoWidth={1080 / 2} vidoeHeight={900 / 2} />
+			<FaceLandmarkerSmileCalibration videoWidth={1080 / 2} vidoeHeight={900 / 2} />
 		</div>
 	);
 };
 
-export default CalibrationScreen;
+export default SmileCalibrationScreen;

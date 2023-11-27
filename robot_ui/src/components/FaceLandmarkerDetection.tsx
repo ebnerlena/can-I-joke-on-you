@@ -33,7 +33,7 @@ const FaceLandmarkerDetection = () => {
 			return;
 		} else {
 			console.log(webcamRef.current.video);
-			// activateWebcamStream(startPrediction);
+			activateWebcamStream(startPrediction);
 		}
 	}, [webcamRef.current?.state]);
 
