@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FaceLandmarker, FaceLandmarkerResult, FilesetResolver } from '@mediapipe/tasks-vision';
+import { FaceLandmarker, FaceLandmarkerResult } from '@mediapipe/tasks-vision';
 import { FaceLandmarkerBlendValues } from '@/types/FaceLandmarkerBlendValues';
 import { CalibrationStatus } from '@/types/CalibrationStatus';
 import { Mood } from '@/types/Mood';
@@ -16,7 +16,8 @@ interface FaceLandmarkDetectorType {
 	activateWebcamStream: (callback: () => void) => void;
 	startCalibration: () => void;
 	stopCalibration: () => void;
-	predictWebcam: () => void;
+	startPrediction: () => void;
+	stopPrediction: () => void;
 	setVideoNode: (video: HTMLVideoElement) => void;
 }
 
@@ -35,6 +36,8 @@ const initialDuringCalibrationBlendValues = {
 };
 
 let lastVideoTime = -1;
+let calibartionStarted = false;
+let smileDegrees: number[] = [];
 
 export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	const [faceLandmarker, setFaceLandmarker] = useState<FaceLandmarker>();
@@ -43,7 +46,9 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	const [webcamRunning, setWebcamRunning] = useState<boolean>(false);
 	const [webcamEnabled, setWebcamEnabled] = useState<boolean>(false);
 	const [calibrationFrames, setCalibrationFrames] = useState<number>(0);
+	const [predictionFrames, setPredictionFrames] = useState<number>(0);
 	const [calibrationStatus, setCalibrationStatus] = useState<CalibrationStatus>(CalibrationStatus.NOT_READY);
+	const [predictionStatus, setPredictionStatus] = useState<CalibrationStatus>(CalibrationStatus.NOT_READY);
 	const [mood, setMood] = useState<Mood>(Mood.NEUTRAL);
 	const [smileDegree, setSmileDegree] = useState<number>(0);
 	const [calibrationBlendValues, setCalibrationBlendValues] = useState<DuringCalibrationBlendValues>(
@@ -65,6 +70,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 		if (isWebcamIsEnabled()) {
 			setCalibrationStatus(CalibrationStatus.READY);
+			setPredictionStatus(CalibrationStatus.READY);
 			setWebcamRunning(true);
 			setWebcamEnabled(true);
 		}
@@ -74,6 +80,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
 	};
 
+	// ************ Calibration ************
 	const doCalibration = useCallback(async () => {
 		console.log('doCalibration');
 		if (!faceLandmarkerService.faceLandmarker || !video) return;
@@ -101,10 +108,14 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 			}
 		}
 		setCalibrationFrames(calibrationFrames + 1);
-	}, [calibrationBlendValues, calibrationFrames, video]);
+
+		if (calibrationStatus === CalibrationStatus.DOING) {
+			calibrateRequestRef.current = requestAnimationFrame(doCalibration);
+		}
+	}, [calibrationBlendValues, calibrationFrames, calibrationStatus, video]);
 
 	const storeCalibrations = useCallback(async () => {
-		console.log('storeCalibrations', calibrationStatus);
+		console.log('storeCalibrations', calibrationStatus, calibrationBlendValues);
 
 		const tmpBlendValues = { ...initialBlendValues };
 
@@ -123,6 +134,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 		setCalibrationStatus(CalibrationStatus.DONE);
 		storeCalibrations();
+		setVideo(null);
 	}, [calibrationStatus, storeCalibrations]);
 
 	const startCalibration = useCallback(() => {
@@ -136,9 +148,10 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		setCalibrationFrames(0);
 		setCalibrationStatus(CalibrationStatus.DOING);
 
-		setTimeout(stopCalibration, 4000);
+		setTimeout(stopCalibration, 5000);
 	}, [stopCalibration, video]);
 
+	// ************ Prediction ************
 	const updateBlendValues = (faceBlendshapes: any) => {
 		console.log('updateBlendValues', faceBlendshapes);
 		let blendFactors: FaceLandmarkerBlendValues = {
@@ -152,9 +165,9 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 			let blendName = faceBlendshapes[0].categories[key].categoryName;
 			let blendScore = faceBlendshapes[0].categories[key].score;
 
-			if (blendName in blendFactors && calibrationBlendValues.hasOwnProperty(blendName)) {
+			if (blendName in blendFactors && blendValuesFromCalibration.hasOwnProperty(blendName)) {
 				// @ts-ignore
-				blendFactors[blendName] += blendScore / (calibrationBlendValues[blendName] / calibrationFrames); // @ts-ignore
+				blendFactors[blendName] += blendScore / (blendValuesFromCalibration[blendName] / calibrationFrames); // @ts-ignore
 			}
 		}
 
@@ -195,13 +208,32 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 			tmpSmileDegree = 4;
 		}
 
+		smileDegrees.push(tmpSmileDegree);
 		console.log('set smile degree', tmpSmileDegree);
 		setSmileDegree(tmpSmileDegree);
 	};
 
-	// TODO call this when video is enabled
-	const predictWebcam = () => {
-		console.log('predictWebcam');
+	const startPrediction = () => {
+		console.log('startPrediction');
+		setPredictionStatus(CalibrationStatus.DOING);
+		smileDegrees = [];
+	};
+
+	const stopPrediction = () => {
+		console.log('endPrediction');
+
+		if (!faceLandmarker || !video) return;
+
+		// TODO send this value to recommender
+		const predictedSmileDegree = smileDegrees.reduce((acc, num) => acc + num, 0) / smileDegrees.length;
+		console.log('final average smile degree predicted', predictedSmileDegree);
+		setCalibrationStatus(CalibrationStatus.DONE);
+		return predictedSmileDegree;
+		// video.removeEventListener('loadeddata', endPrediction);
+	};
+
+	const predictWebcam = useCallback(() => {
+		console.log('predictWebcam', faceLandmarkerService.faceLandmarker, video);
 		if (!faceLandmarkerService.faceLandmarker || !video) return;
 		let startTimeMs = performance.now();
 		let results: FaceLandmarkerResult | null = null;
@@ -210,20 +242,17 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 			lastVideoTime = video.currentTime;
 			results = faceLandmarkerService.faceLandmarker.detectForVideo(video, startTimeMs);
 		}
+		console.log(results);
 		if (results && results.faceBlendshapes?.length > 0) {
 			const { faceBlendshapes } = results;
 			updateBlendValues(faceBlendshapes);
 		}
 
-		// TODO how to handle this...
-		// Call this function again to keep predicting when the browser is ready.
-		// if (webcamRunning === true) {
-		// 	predictRequestRef.current = requestAnimationFrame(predictWebcam);
-		// }
-	};
+		predictRequestRef.current = requestAnimationFrame(predictWebcam);
+	}, []);
 
 	const activateWebcamStream = (callback: () => void) => {
-		console.log('activateWebcamStream');
+		console.log('activateWebcamStream', video);
 		if (video === null) {
 			console.log('Wait! video not loaded yet.');
 			return;
@@ -240,11 +269,19 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		});
 	};
 
+	// ************ UseEffects ************
 	useEffect(() => {
-		if (calibrationStatus === CalibrationStatus.DOING) {
-			requestAnimationFrame(doCalibration);
+		if (calibrationStatus === CalibrationStatus.DOING && !calibartionStarted) {
+			calibartionStarted = true;
+			calibrateRequestRef.current = requestAnimationFrame(doCalibration);
 		}
 	}, [calibrationStatus, doCalibration]);
+
+	useEffect(() => {
+		if (predictionStatus === CalibrationStatus.DOING) {
+			predictRequestRef.current = requestAnimationFrame(predictWebcam);
+		}
+	}, [predictionStatus, predictWebcam]);
 
 	useEffect(() => {
 		if (!video) return;
@@ -267,7 +304,8 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		startCalibration: startCalibration,
 		stopCalibration: stopCalibration,
 		activateWebcamStream: activateWebcamStream,
-		predictWebcam: predictWebcam,
+		startPrediction: startPrediction,
+		stopPrediction: stopPrediction,
 		setVideoNode: (video: HTMLVideoElement) => setVideo(video),
 	};
 };

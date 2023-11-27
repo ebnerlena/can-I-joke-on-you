@@ -1,11 +1,12 @@
 'use client';
 
+import Link from 'next/link';
 import Webcam from 'react-webcam';
 
 const StartScreen = () => {
 	const inputResolution = {
-		width: 1080 / 2,
-		height: 900 / 2,
+		width: 1080 / 3,
+		height: 900 / 3,
 	};
 
 	const videoConstraints = {
@@ -24,7 +25,9 @@ const StartScreen = () => {
 				<p className="pt-8">Press START CALIBRATION whenever you are ready.</p>
 			</div>
 
-			<button className="btn text-3xl">Start Calibration</button>
+			<Link href="/calibration" className="btn text-3xl">
+				Start Calibration
+			</Link>
 
 			<Webcam videoConstraints={videoConstraints} />
 		</div>

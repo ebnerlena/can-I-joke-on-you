@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useFaceLandmarkDetector } from '../utils/useDetector';
 import Webcam from 'react-webcam';
+import { CalibrationStatus } from '@/types/CalibrationStatus';
+import { useRouter } from 'next/navigation';
 
 type Props = {
 	vidoeHeight?: number;
@@ -13,7 +15,8 @@ const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, vidoeHeight })
 	const webcamRef = useRef<Webcam>(null);
 	const [error, setError] = useState<string | null>(null);
 
-	const { activateWebcamStream, startCalibration, setVideoNode } = useFaceLandmarkDetector();
+	const { activateWebcamStream, startCalibration, setVideoNode, calibrationStatus } = useFaceLandmarkDetector();
+	const router = useRouter();
 
 	useEffect(() => {
 		if (webcamRef.current) {
@@ -24,12 +27,19 @@ const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, vidoeHeight })
 	useEffect(() => {
 		if (!webcamRef.current?.state.hasUserMedia || !webcamRef.current.video) {
 			setError('Webcam not enabled. Please allow and enable.');
+			return;
 		} else {
 			setError(null);
 
 			activateWebcamStream(startCalibration);
 		}
 	}, [webcamRef.current?.state]);
+
+	useEffect(() => {
+		if (calibrationStatus === CalibrationStatus.DONE) {
+			router.push('/main');
+		}
+	}, [calibrationStatus, router]);
 
 	const inputResolution = {
 		width: videoWidth ?? 1080 / 4,
@@ -45,7 +55,7 @@ const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, vidoeHeight })
 	return (
 		<div className="">
 			<div className="flex gap-1 pb-2 w-full items-center justify-center">
-				{error && <p className="text-red-600 text-xl font-bold">Error: {error} </p>}
+				{/* {error && <p className="text-red-600 text-xl font-bold">Waiting for webcam... {error} </p>} */}
 			</div>
 			<Webcam ref={webcamRef} videoConstraints={videoConstraints} />
 		</div>

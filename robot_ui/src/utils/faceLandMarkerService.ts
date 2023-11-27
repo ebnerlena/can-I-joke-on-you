@@ -9,8 +9,10 @@ export class FaceLandmarkerService {
 	}
 
 	constructor() {
+		if (typeof window === 'undefined') return;
+
 		this.init().then((landmarker) => {
-			console.log('facelandmaker instance initialized!');
+			console.log('facelandmaker instance initialized!', landmarker);
 			this.faceLandmarker = landmarker;
 		});
 	}
