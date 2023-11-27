@@ -37,14 +37,19 @@ const initialDuringCalibrationBlendValues = {
 };
 
 let lastVideoTime = -1;
-let calibartionStarted = false;
-let smileDegrees: number[] = [];
+
+let smileDegrees: number[] = Array(100).fill(0);
+let currentMaxSmileDegree: number = 0;
+let currentAvgSmileDegree: number = 0;
+
 let calibrationBlendValues = {
 	mouthPressLeft: [],
 	mouthPressRight: [],
 	mouthSmileLeft: [],
 	mouthSmileRight: [],
 };
+
+let lastSmileDegreeHeadIdx = 0;
 
 export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	const [faceLandmarker, setFaceLandmarker] = useState<FaceLandmarker>();
@@ -200,28 +205,37 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		let tmpSmileDegree = (blendValues['mouthSmileLeft'] + blendValues['mouthSmileRight']) / 200;
 		tmpSmileDegree = Math.min(1, Math.max(0, smileDegree));
 
-		smileDegrees.push(tmpSmileDegree);
-		console.log('set smile degree', tmpSmileDegree, smileDegrees);
-		setSmileDegree(tmpSmileDegree);
+		// Pushing smileDegree to shifting array
+		smileDegrees[lastSmileDegreeHeadIdx] = tmpSmileDegree;
+		lastSmileDegreeHeadIdx += 1 % smileDegrees.length;
+
+		// Update average and max smile degree
+		const tmpAvgSmileDegree = smileDegrees.reduce((acc, num) => acc + num, 0) / smileDegrees.length;
+		if (tmpAvgSmileDegree > currentMaxSmileDegree) {
+			currentAvgSmileDegree = tmpAvgSmileDegree;
+			currentMaxSmileDegree = Math.max(...smileDegrees);
+		}
+
+		console.log('set smile degree', tmpSmileDegree, currentAvgSmileDegree, currentMaxSmileDegree);
 	};
 
 	const startPrediction = () => {
 		console.log('startPrediction');
 		setPredictionStatus(CalibrationStatus.DOING);
-		smileDegrees = [];
+		smileDegrees = Array(100).fill(0);
+		currentMaxSmileDegree = 0;
+		currentAvgSmileDegree = 0;
 	};
 
 	const stopPrediction = () => {
-		console.log('endPrediction');
-
+		console.log('stopPrediction');
 		if (!faceLandmarker || !video) return;
 
-		// TODO send this value to recommender
-		const predictedSmileDegree = smileDegrees.reduce((acc, num) => acc + num, 0) / smileDegrees.length;
-		console.log('final average smile degree predicted', predictedSmileDegree);
-		setCalibrationStatus(CalibrationStatus.DONE);
-		return predictedSmileDegree;
-		// video.removeEventListener('loadeddata', endPrediction);
+		// TODO send max value to recommender
+		console.log('final max smile degree predicted', currentMaxSmileDegree);
+		setPredictionStatus(CalibrationStatus.DONE);
+		setSmileDegree(currentMaxSmileDegree);
+		return currentMaxSmileDegree;
 	};
 
 	const predictWebcam = useCallback(() => {
