@@ -18,11 +18,10 @@ const StartSmileCalibrationScreen = () => {
 
 	return (
 		<div className="h-full w-full flex flex-col items-center justify-center gap-8 p-12">
-			<div className='flex gap-16'>
-				<Image src={"/smileTeams.png"} alt='smile' width={200} height={200}></Image>
-				<div className='flex flex-col gap-4'>
-					<div className="text-justify text-xl max-w-[800px]">
-						<h2 className="font-bold pb-2">Give us your biggest smile :)</h2>
+			<div className="flex flex-col items-center gap-16 w-full justify-center">
+				<div className="flex flex-col gap-4">
+					<div className="text-justify text-xl max-w-[1000px]">
+						<h2 className="font-bold pb-2 text-2xl">Give us your biggest smile :)</h2>
 						<p>As last step we need your biggest smile for calibrating your face. </p>
 						<p>Again please make sure your face is fully covered by your camera.</p>
 						<p>
@@ -34,12 +33,17 @@ const StartSmileCalibrationScreen = () => {
 						</p>
 					</div>
 
-					<Link href="/smile-calibration" className="btn text-3xl w-fit">
+					<Link href="/smile-calibration" className="btn text-3xl w-fit self-center mt-10">
 						Start Smile Calibration
 					</Link>
 				</div>
 			</div>
-			<Webcam videoConstraints={videoConstraints} />
+			<div className="flex mt-10 gap-10">
+				<div className="w-62 h-62">
+					<Image src={'/smileTeams.png'} alt="neutral" width={200} height={200} className="w-full h-full" />
+				</div>
+				<Webcam videoConstraints={videoConstraints} />
+			</div>
 		</div>
 	);
 };
