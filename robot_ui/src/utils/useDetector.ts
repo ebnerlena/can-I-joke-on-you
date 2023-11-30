@@ -71,6 +71,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	// Refs
 	const calibrateRequestRef = useRef<number>();
 	const predictRequestRef = useRef<number>();
+	const predictionIntervalRef = useRef<NodeJS.Timeout>();
 
 	const initFacelandmarks = useCallback(async () => {
 		const landmarker = faceLandmarkerService.faceLandmarker;
@@ -148,7 +149,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	]);
 
 	const stopCalibration = useCallback(() => {
-		console.log('stopCalibration', calibrationStatus);
+		console.log('stopCalibration');
 
 		setCalibrationStatus(CalibrationStatus.DONE);
 		storeCalibrations();
@@ -215,11 +216,11 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		if (tmpAvgSmileDegree > currentMaxSmileDegree) {
 			currentAvgSmileDegree = tmpAvgSmileDegree;
 			currentMaxSmileDegree = Math.max(...smileDegrees);
-		} else {
-			console.log('else');
+
+			console.log('update max smile degree: ', currentMaxSmileDegree, currentAvgSmileDegree);
 		}
 
-		console.log('set smile degree', tmpSmileDegree, currentAvgSmileDegree, currentMaxSmileDegree);
+		console.log('set smile degree: ', tmpSmileDegree);
 	};
 
 	const startPrediction = () => {
@@ -240,6 +241,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		console.log('final max smile degree predicted', currentMaxSmileDegree);
 		predictionRunning = false;
 		setSmileDegree(currentMaxSmileDegree);
+		clearInterval(predictionIntervalRef.current);
 
 		return currentMaxSmileDegree;
 	};
@@ -259,7 +261,10 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 			calculateBlendValuesOnSpectrum(faceBlendshapes);
 		}
 		if (predictionRunning) {
-			setTimeout(() => requestAnimationFrame(predictWebcam), 2000);
+			predictionIntervalRef.current = setInterval(
+				() => (predictRequestRef.current = requestAnimationFrame(predictWebcam)),
+				2000,
+			);
 		}
 	}, [video, calculateBlendValuesOnSpectrum]);
 
@@ -297,6 +302,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		return () => {
 			calibrateRequestRef.current && cancelAnimationFrame(calibrateRequestRef.current);
 			predictRequestRef.current && cancelAnimationFrame(predictRequestRef.current);
+			predictionIntervalRef.current && clearInterval(predictionIntervalRef.current);
 		};
 	}, [initFacelandmarks, video]);
 
