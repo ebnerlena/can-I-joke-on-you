@@ -68,16 +68,12 @@ const PlayJokes = () => {
 	};
 
 	return (
-		<div className="h-[79vh] w-full">
+		<div className="h-[79vh] w-full flex flex-col items-center justify-center">
 			<Controls onNextClick={nextJoke} onRandomClick={randomJoke} onPlayClick={playJoke} />
+			<p className="mt-20 text-4xl px-20">{`${jokes[activeJokeIndex]}`}</p>
+
 			<FaceLandmarkerDetection />
 			<Canvas shadows className="w-full">
-				<mesh>
-					<Text position={[0, 24, 0]} color="black" maxWidth={35}>
-						{`"${jokes[activeJokeIndex]}"`}
-					</Text>
-				</mesh>
-
 				<PerspectiveCamera
 					makeDefault
 					position={[0, 20, 18]}
