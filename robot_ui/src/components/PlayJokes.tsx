@@ -70,7 +70,9 @@ const PlayJokes = () => {
 	return (
 		<div className="h-[79vh] w-full flex flex-col items-center justify-center">
 			<Controls onNextClick={nextJoke} onRandomClick={randomJoke} onPlayClick={playJoke} />
-			{jokes[activeJokeIndex] && <p className="mt-20 text-4xl px-20">{`${jokes[activeJokeIndex]}`}</p>}
+			{jokes[activeJokeIndex] && (
+				<p className="mt-20 text-4xl mx-[120px] max-w-[650px] bg-black/20 rounded-lg p-8">{`${jokes[activeJokeIndex]}`}</p>
+			)}
 
 			<FaceLandmarkerDetection />
 			<Canvas shadows className="w-full">
