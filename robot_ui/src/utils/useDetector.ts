@@ -27,6 +27,7 @@ type DuringCalibrationBlendValues = {
 };
 
 const CALIBRATION_FRAMES = 30;
+const PREDICTION_INTERVAL = 1000;
 
 let lastVideoTime = -1;
 
@@ -172,7 +173,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 	const calculateBlendValuesOnSpectrum = useCallback(
 		(faceBlendshapes: any) => {
-			console.log('calculateBlendValuesOnSpectrum', faceBlendshapes);
+			// console.log('calculateBlendValuesOnSpectrum', faceBlendshapes);
 			let blendFactors: FaceLandmarkerBlendValues = {
 				mouthSmileLeft: 0,
 				mouthSmileRight: 0,
@@ -195,7 +196,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	);
 
 	const calculateSmileDegree = (blendValues: FaceLandmarkerBlendValues) => {
-		console.log('calculateSmileDegree');
+		// console.log('calculateSmileDegree');
 		// Calculate smile degree
 		let tmpSmileDegree = blendValues['mouthSmileLeft'] + blendValues['mouthSmileRight'] / 2;
 		tmpSmileDegree = Math.min(1, Math.max(0, tmpSmileDegree));
@@ -209,8 +210,6 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		if (tmpAvgSmileDegree > currentMaxSmileDegree) {
 			currentAvgSmileDegree = tmpAvgSmileDegree;
 			currentMaxSmileDegree = Math.max(...smileDegrees);
-
-			console.log('update max smile degree: ', currentMaxSmileDegree, currentAvgSmileDegree);
 		}
 
 		console.log('set smile degree: ', tmpSmileDegree);
@@ -224,6 +223,11 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		currentAvgSmileDegree = 0;
 
 		predictRequestRef.current = requestAnimationFrame(predictWebcam);
+
+		predictionIntervalRef.current = setInterval(
+			() => (predictRequestRef.current = requestAnimationFrame(predictWebcam)),
+			PREDICTION_INTERVAL,
+		);
 	};
 
 	const stopPrediction = () => {
@@ -240,7 +244,9 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	};
 
 	const predictWebcam = useCallback(() => {
-		console.log('predictWebcam', faceLandmarkerService.faceLandmarker, video);
+		console.log('predictWebcam', faceLandmarkerService.faceLandmarker, video, predictionRunning);
+		if (!predictionRunning) return;
+
 		if (!faceLandmarkerService.faceLandmarker || !video) return;
 		let startTimeMs = performance.now();
 		let results: FaceLandmarkerResult | null = null;
@@ -252,12 +258,6 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		if (results && results.faceBlendshapes?.length > 0) {
 			const { faceBlendshapes } = results;
 			calculateBlendValuesOnSpectrum(faceBlendshapes);
-		}
-		if (predictionRunning) {
-			predictionIntervalRef.current = setInterval(
-				() => (predictRequestRef.current = requestAnimationFrame(predictWebcam)),
-				2000,
-			);
 		}
 	}, [video, calculateBlendValuesOnSpectrum]);
 

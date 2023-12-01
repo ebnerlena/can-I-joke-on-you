@@ -70,7 +70,7 @@ const PlayJokes = () => {
 	return (
 		<div className="h-[79vh] w-full flex flex-col items-center justify-center">
 			<Controls onNextClick={nextJoke} onRandomClick={randomJoke} onPlayClick={playJoke} />
-			<p className="mt-20 text-4xl px-20">{`${jokes[activeJokeIndex]}`}</p>
+			{jokes[activeJokeIndex] && <p className="mt-20 text-4xl px-20">{`${jokes[activeJokeIndex]}`}</p>}
 
 			<FaceLandmarkerDetection />
 			<Canvas shadows className="w-full">
@@ -98,8 +98,6 @@ const PlayJokes = () => {
 				<Suspense>
 					<Model position={[0, 5, 0]} scale={[5, 5, 5]} rotation={[0, (178 * Math.PI) / 180, 0]} />
 				</Suspense>
-
-				{/* <Plane args={[200, 100]} rotation={[-Math.PI / 2, 0, 0]} position={[0, -10, 0]} receiveShadow /> */}
 			</Canvas>
 		</div>
 	);
