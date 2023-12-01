@@ -1,17 +1,19 @@
 'use client';
 
-import { useApplicationStore } from '@/store/store';
+import { useApplicationStore, useCalibrationStore } from '@/store/store';
 import { ApplicationStatus } from '@/types/ApplicationStatus';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
 
 const Header = () => {
 	const setApplicationStatus = useApplicationStore((state) => state.setStatus);
+	const resetApplicationStore = useApplicationStore((state) => state.reset);
+	const resetCalibrationStore = useCalibrationStore((state) => state.reset);
 
 	const onRestart = useCallback(() => {
-		setApplicationStatus(ApplicationStatus.START);
-	}, [setApplicationStatus]);
+		resetApplicationStore();
+		resetCalibrationStore();
+	}, [resetApplicationStore, resetCalibrationStore]);
 
 	const onFinish = useCallback(() => {
 		setApplicationStatus(ApplicationStatus.END);

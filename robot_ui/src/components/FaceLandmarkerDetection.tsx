@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useFaceLandmarkDetector } from '../utils/useDetector';
 import Webcam from 'react-webcam';
 
 type Props = {
@@ -13,7 +12,9 @@ const FaceLandmarkerDetection: React.FC<Props> = ({ onWebcamRefReceived }) => {
 
 	useEffect(() => {
 		if (webcamRef.current) {
-			if (webcamRef.current.video) onWebcamRefReceived(webcamRef.current.video);
+			if (webcamRef.current.video) {
+				onWebcamRefReceived(webcamRef.current.video);
+			}
 		}
 	}, [onWebcamRefReceived]);
 

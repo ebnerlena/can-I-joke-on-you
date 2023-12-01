@@ -2,9 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FaceLandmarker, FaceLandmarkerResult } from '@mediapipe/tasks-vision';
 import { FaceLandmarkerBlendValues } from '@/types/FaceLandmarkerBlendValues';
 import { CalibrationStatus } from '@/types/CalibrationStatus';
-import { Mood } from '@/types/Mood';
-import { initialBlendValues, useCalibrationStore } from '@/store/store';
-import { FaceLandmarkerService, faceLandmarkerService } from './faceLandMarkerService';
+import { initialBlendValues, useApplicationStore, useCalibrationStore } from '@/store/store';
+import { faceLandmarkerService } from './faceLandMarkerService';
 import { CalibrationMode } from '@/types/CalibrationMode';
 
 interface FaceLandmarkDetectorType {
@@ -57,6 +56,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	const calibrationStatusFromStore = useCalibrationStore((state) => state.status);
 	const smileBlendValuesFromCalibration = useCalibrationStore((state) => state.smileBlendValues);
 	const setSmileBlendValuesFromCalibration = useCalibrationStore((state) => state.setSmileBlendValues);
+	const setMaxSmileDegree = useApplicationStore((state) => state.setSmileDegree);
 
 	// Refs
 	const calibrateRequestRef = useRef<number>();
@@ -207,6 +207,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 		// Update average and max smile degree
 		const tmpAvgSmileDegree = smileDegrees.reduce((acc, num) => acc + num, 0) / smileDegrees.length;
+		setSmileDegree(tmpSmileDegree);
 		if (tmpAvgSmileDegree > currentMaxSmileDegree) {
 			currentAvgSmileDegree = tmpAvgSmileDegree;
 			currentMaxSmileDegree = Math.max(...smileDegrees);
@@ -234,10 +235,9 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		console.log('stopPrediction');
 		if (!faceLandmarkerService.faceLandmarker || !video) return;
 
-		// TODO send max value to recommender - can be used from store as it is stored globally
 		console.log('final max smile degree predicted', currentMaxSmileDegree);
 		predictionRunning = false;
-		setSmileDegree(currentMaxSmileDegree);
+		setMaxSmileDegree(currentMaxSmileDegree);
 		clearInterval(predictionIntervalRef.current);
 
 		return currentMaxSmileDegree;

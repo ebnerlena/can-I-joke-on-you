@@ -6,8 +6,6 @@ import { persist } from 'zustand/middleware';
 
 // Calibration Store
 export const initialBlendValues = {
-	mouthPressLeft: 0,
-	mouthPressRight: 0,
 	mouthSmileLeft: 0,
 	mouthSmileRight: 0,
 };
@@ -48,9 +46,34 @@ export const useCalibrationStore = create<CalibrationStore>()(
 interface ApplicationStore {
 	status: ApplicationStatus;
 	setStatus: (status: ApplicationStatus) => void;
+	smileDegree: number;
+	setSmileDegree: (smileDegree: number) => void;
+	predictionPageReloaded: boolean;
+	setPredictionPageReloaded: (predictionPageReloaded: boolean) => void;
+
+	reset: () => void;
 }
 
-export const useApplicationStore = create<ApplicationStore>()((set) => ({
-	status: ApplicationStatus.START,
-	setStatus: (status) => set(() => ({ status: status })),
-}));
+export const useApplicationStore = create<ApplicationStore>()(
+	persist(
+		(set) => ({
+			status: ApplicationStatus.START,
+			setStatus: (status) => set(() => ({ status: status })),
+			smileDegree: 0,
+			setSmileDegree: (smileDegree) => set(() => ({ smileDegree: smileDegree })),
+			predictionPageReloaded: false,
+			setPredictionPageReloaded: (predictionPageReloaded) =>
+				set(() => ({ predictionPageReloaded: predictionPageReloaded })),
+
+			reset: () =>
+				set(() => ({
+					status: ApplicationStatus.START,
+					smileDegree: 0,
+					predictionPageReloaded: false,
+				})),
+		}),
+		{
+			name: 'app-storage', // name of the item in the storage (must be unique)
+		},
+	),
+);

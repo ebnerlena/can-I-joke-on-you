@@ -7,12 +7,16 @@ import { PerspectiveCamera, Text } from '@react-three/drei';
 import Controls from './Controls';
 import FaceLandmarkerDetection from './FaceLandmarkerDetection';
 import { useFaceLandmarkDetector } from '@/utils/useDetector';
+import { useApplicationStore } from '@/store/store';
 
 const PlayJokes = () => {
 	const [jokes, setJokes] = useState<string[]>([]);
 	const [activeJokeIndex, setActiveJokeIndex] = useState(0);
 
 	const { smileDegree, setVideoNode, startPrediction, stopPrediction } = useFaceLandmarkDetector();
+	const maxSmileDegree = useApplicationStore((state) => state.smileDegree);
+	const predictionPageReloaded = useApplicationStore((state) => state.predictionPageReloaded);
+	const setPredictionPageReloaded = useApplicationStore((state) => state.setPredictionPageReloaded);
 
 	useEffect(() => {
 		fetch('http://localhost:3000/jokes.json')
@@ -20,6 +24,13 @@ const PlayJokes = () => {
 			.then((jokes) => setJokes(jokes.jokes));
 
 		window.speechSynthesis.cancel();
+	}, []);
+
+	useEffect(() => {
+		if (!predictionPageReloaded) {
+			setPredictionPageReloaded(true);
+			window.location.reload();
+		}
 	}, []);
 
 	// *************** Jokes  *******************
@@ -51,6 +62,8 @@ const PlayJokes = () => {
 		window.speechSynthesis.cancel();
 		stopPrediction();
 
+		// TODO send maxSmileDegree to recommender and retrieve next joke
+
 		if (activeJokeIndex === jokes.length - 1) {
 			setActiveJokeIndex(0);
 		} else {
@@ -77,10 +90,14 @@ const PlayJokes = () => {
 		<div className="h-[79vh] w-full flex flex-col items-center justify-center">
 			<Controls onNextClick={nextJoke} onRandomClick={randomJoke} onPlayClick={playJoke} />
 
-			<div className="flex gap-4 mt-1 pb-2 w-full items-center justify-center">
-				<p>
+			<div className="flex gap-4 mt-1 pb-2 w-full items-center justify-center text-xs">
+				<p className="p-0 m-0">
 					<span className="font-bold">Smile Degree: </span>
 					{smileDegree.toFixed(4)}
+				</p>
+				<p className="p-0 m-0">
+					<span className="font-bold">Last Max Smile Degree: </span>
+					{maxSmileDegree.toFixed(4)}
 				</p>
 				<button className="text-xs underline" onClick={stopPrediction}>
 					Stop Prediction
