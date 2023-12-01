@@ -244,7 +244,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	};
 
 	const predictWebcam = useCallback(() => {
-		console.log('predictWebcam', faceLandmarkerService.faceLandmarker, video, predictionRunning);
+		// console.log('predictWebcam', faceLandmarkerService.faceLandmarker, video, predictionRunning);
 		if (!predictionRunning) return;
 
 		if (!faceLandmarkerService.faceLandmarker || !video) return;

@@ -6,10 +6,13 @@ import { Canvas } from '@react-three/fiber';
 import { PerspectiveCamera, Text } from '@react-three/drei';
 import Controls from './Controls';
 import FaceLandmarkerDetection from './FaceLandmarkerDetection';
+import { useFaceLandmarkDetector } from '@/utils/useDetector';
 
 const PlayJokes = () => {
 	const [jokes, setJokes] = useState<string[]>([]);
 	const [activeJokeIndex, setActiveJokeIndex] = useState(0);
+
+	const { smileDegree, setVideoNode, startPrediction, stopPrediction } = useFaceLandmarkDetector();
 
 	useEffect(() => {
 		fetch('http://localhost:3000/jokes.json')
@@ -19,6 +22,7 @@ const PlayJokes = () => {
 		window.speechSynthesis.cancel();
 	}, []);
 
+	// *************** Jokes  *******************
 	const speakJoke = () => {
 		const synth = window.speechSynthesis;
 		const voices = synth.getVoices();
@@ -34,6 +38,7 @@ const PlayJokes = () => {
 		msg.lang = voices[voiceIndex]?.lang;
 
 		window.speechSynthesis.speak(msg);
+		startPrediction();
 	};
 
 	useEffect(() => {
@@ -44,6 +49,7 @@ const PlayJokes = () => {
 
 	const nextJoke = () => {
 		window.speechSynthesis.cancel();
+		stopPrediction();
 
 		if (activeJokeIndex === jokes.length - 1) {
 			setActiveJokeIndex(0);
@@ -70,11 +76,25 @@ const PlayJokes = () => {
 	return (
 		<div className="h-[79vh] w-full flex flex-col items-center justify-center">
 			<Controls onNextClick={nextJoke} onRandomClick={randomJoke} onPlayClick={playJoke} />
+
+			<div className="flex gap-4 mt-1 pb-2 w-full items-center justify-center">
+				<p>
+					<span className="font-bold">Smile Degree: </span>
+					{smileDegree.toFixed(4)}
+				</p>
+				<button className="text-xs underline" onClick={stopPrediction}>
+					Stop Prediction
+				</button>
+				<button className="text-xs underline" onClick={startPrediction}>
+					Predict
+				</button>
+			</div>
+
 			{jokes[activeJokeIndex] && (
 				<p className="mt-20 text-4xl mx-[120px] max-w-[650px] bg-black/20 rounded-lg p-8">{`${jokes[activeJokeIndex]}`}</p>
 			)}
 
-			<FaceLandmarkerDetection />
+			<FaceLandmarkerDetection onWebcamRefReceived={setVideoNode} />
 			<Canvas shadows className="w-full">
 				<PerspectiveCamera
 					makeDefault
