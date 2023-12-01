@@ -35,7 +35,7 @@ const FaceLandmarkerSmileCalibration: React.FC<Props> = ({ videoWidth, vidoeHeig
 		} else {
 			setError(null);
 
-			activateWebcamStream(startCalibration);
+			setTimeout(() => activateWebcamStream(startCalibration), 1000);
 		}
 	}, [webcamRef.current?.state]);
 

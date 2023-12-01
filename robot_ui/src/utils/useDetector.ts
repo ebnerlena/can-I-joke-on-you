@@ -26,6 +26,8 @@ type DuringCalibrationBlendValues = {
 	mouthSmileRight: number[];
 };
 
+const CALIBRATION_FRAMES = 30;
+
 let lastVideoTime = -1;
 
 let smileDegrees: number[] = Array(100).fill(0);
@@ -130,7 +132,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		// console.log('doCalibration', video, faceLandmarkerService.faceLandmarker);
 		if (!faceLandmarkerService.faceLandmarker || !video) return;
 
-		if (calibrationBlendValues.mouthSmileLeft.length >= 30) {
+		if (calibrationBlendValues.mouthSmileLeft.length >= CALIBRATION_FRAMES) {
 			stopCalibration();
 			return;
 		}
@@ -141,7 +143,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		if (lastVideoTime !== video.currentTime) {
 			lastVideoTime = video.currentTime;
 			results = faceLandmarkerService.faceLandmarker.detectForVideo(video, startTimeMs);
-			console.log(results);
+			// console.log(results);
 		}
 
 		if (!results || results.faceBlendshapes.length === 0) return;
