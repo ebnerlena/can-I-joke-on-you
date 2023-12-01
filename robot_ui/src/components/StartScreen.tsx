@@ -35,7 +35,7 @@ const StartScreen = () => {
 						Start NEUTRAL Calibration
 					</Link>
 				</div>
-				<div className="flex mt-10 gap-10">
+				<div className="flex gap-10">
 					<div className="w-62 h-62">
 						<Image src={'/neutralTeams.png'} alt="neutral" width={200} height={200} className="w-full h-full" />
 					</div>

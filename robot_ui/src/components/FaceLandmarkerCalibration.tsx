@@ -15,6 +15,7 @@ type Props = {
 
 const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, vidoeHeight }) => {
 	const webcamRef = useRef<Webcam>(null);
+
 	const [error, setError] = useState<string | null>(null);
 
 	const { activateWebcamStream, startCalibration, setVideoNode, calibrationStatus } = useFaceLandmarkDetector();
@@ -36,7 +37,7 @@ const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, vidoeHeight })
 		} else {
 			setError(null);
 
-			setTimeout(() => activateWebcamStream(startCalibration), 1000);
+			setTimeout(() => activateWebcamStream(startCalibration), 1500);
 		}
 	}, [webcamRef.current?.state]);
 
