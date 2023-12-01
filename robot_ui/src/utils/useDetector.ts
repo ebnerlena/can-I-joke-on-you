@@ -261,23 +261,26 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		}
 	}, [video, calculateBlendValuesOnSpectrum]);
 
-	const activateWebcamStream = (callback: () => void) => {
-		console.log('activateWebcamStream', video);
-		if (video === null) {
-			console.log('Wait! video not loaded yet.');
-			return;
-		}
+	const activateWebcamStream = useCallback(
+		(callback: () => void) => {
+			console.log('activateWebcamStream');
+			if (video === null) {
+				console.log('Wait! video not loaded yet.');
+				return;
+			}
 
-		// getUsermedia parameters.
-		const constraints = {
-			video: true,
-		};
-		// Activate the webcam stream.
-		navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
-			video.srcObject = stream;
-			video.addEventListener('loadeddata', callback);
-		});
-	};
+			// getUsermedia parameters.
+			const constraints = {
+				video: true,
+			};
+			// Activate the webcam stream.
+			navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
+				video.srcObject = stream;
+				video.addEventListener('loadeddata', callback);
+			});
+		},
+		[video],
+	);
 
 	// ************ UseEffects ************
 	useEffect(() => {
