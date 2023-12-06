@@ -2,14 +2,21 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import Model from './Model';
-import { Canvas } from 'react-three-fiber';
+import { Canvas } from '@react-three/fiber';
 import { PerspectiveCamera, Text } from '@react-three/drei';
 import Controls from './Controls';
 import FaceLandmarkerDetection from './FaceLandmarkerDetection';
+import { useFaceLandmarkDetector } from '@/utils/useDetector';
+import { useApplicationStore } from '@/store/store';
 
 const PlayJokes = () => {
 	const [jokes, setJokes] = useState<string[]>([]);
 	const [activeJokeIndex, setActiveJokeIndex] = useState(0);
+
+	const { smileDegree, setVideoNode, startPrediction, stopPrediction } = useFaceLandmarkDetector();
+	const maxSmileDegree = useApplicationStore((state) => state.smileDegree);
+	const predictionPageReloaded = useApplicationStore((state) => state.predictionPageReloaded);
+	const setPredictionPageReloaded = useApplicationStore((state) => state.setPredictionPageReloaded);
 
 	useEffect(() => {
 		fetch('http://localhost:3000/jokes.json')
@@ -19,6 +26,14 @@ const PlayJokes = () => {
 		window.speechSynthesis.cancel();
 	}, []);
 
+	useEffect(() => {
+		if (!predictionPageReloaded) {
+			setPredictionPageReloaded(true);
+			window.location.reload();
+		}
+	}, []);
+
+	// *************** Jokes  *******************
 	const speakJoke = () => {
 		const synth = window.speechSynthesis;
 		const voices = synth.getVoices();
@@ -34,6 +49,7 @@ const PlayJokes = () => {
 		msg.lang = voices[voiceIndex]?.lang;
 
 		window.speechSynthesis.speak(msg);
+		startPrediction();
 	};
 
 	useEffect(() => {
@@ -44,6 +60,9 @@ const PlayJokes = () => {
 
 	const nextJoke = () => {
 		window.speechSynthesis.cancel();
+		stopPrediction();
+
+		// TODO send maxSmileDegree to recommender and retrieve next joke
 
 		if (activeJokeIndex === jokes.length - 1) {
 			setActiveJokeIndex(0);
@@ -68,18 +87,36 @@ const PlayJokes = () => {
 	};
 
 	return (
-		<div className="h-[79vh] w-full">
+		<div className="h-[79vh] w-full flex flex-col items-center justify-center">
 			<Controls onNextClick={nextJoke} onRandomClick={randomJoke} onPlayClick={playJoke} />
-			<FaceLandmarkerDetection />
+
+			<div className="flex gap-4 mt-1 pb-2 w-full items-center justify-center text-xs">
+				<p className="p-0 m-0">
+					<span className="font-bold">Smile Degree: </span>
+					{smileDegree.toFixed(4)}
+				</p>
+				<p className="p-0 m-0">
+					<span className="font-bold">Last Max Smile Degree: </span>
+					{maxSmileDegree.toFixed(4)}
+				</p>
+				<button className="text-xs underline" onClick={stopPrediction}>
+					Stop Prediction
+				</button>
+				<button className="text-xs underline" onClick={startPrediction}>
+					Predict
+				</button>
+			</div>
+
+			{jokes[activeJokeIndex] && (
+				<p className="mt-20 text-4xl mx-[120px] max-w-[650px] bg-black/20 rounded-lg p-8">{`${jokes[activeJokeIndex]}`}</p>
+			)}
+
+			<FaceLandmarkerDetection onWebcamRefReceived={setVideoNode} />
 			<Canvas shadows className="w-full">
-				<Text position={[0, 24, 0]} fontSize={1.2} color="black" maxWidth={35}>
-					{`"${jokes[activeJokeIndex]}"`}
-				</Text>
 				<PerspectiveCamera
 					makeDefault
 					position={[0, 20, 18]}
 					fov={75}
-					aspect={window.innerWidth / window.innerHeight}
 					near={0.01}
 					far={1000}
 					rotation={[(-15 * Math.PI) / 180, 0, 0]}
@@ -100,8 +137,6 @@ const PlayJokes = () => {
 				<Suspense>
 					<Model position={[0, 5, 0]} scale={[5, 5, 5]} rotation={[0, (178 * Math.PI) / 180, 0]} />
 				</Suspense>
-
-				{/* <Plane args={[200, 100]} rotation={[-Math.PI / 2, 0, 0]} position={[0, -10, 0]} receiveShadow /> */}
 			</Canvas>
 		</div>
 	);

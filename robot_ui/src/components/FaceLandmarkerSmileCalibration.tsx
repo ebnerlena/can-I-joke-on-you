@@ -13,9 +13,8 @@ type Props = {
 	videoWidth?: number;
 };
 
-const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, vidoeHeight }) => {
+const FaceLandmarkerSmileCalibration: React.FC<Props> = ({ videoWidth, vidoeHeight }) => {
 	const webcamRef = useRef<Webcam>(null);
-
 	const [error, setError] = useState<string | null>(null);
 
 	const { activateWebcamStream, startCalibration, setVideoNode, calibrationStatus } = useFaceLandmarkDetector();
@@ -23,8 +22,7 @@ const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, vidoeHeight })
 	const setCalibrationStatus = useCalibrationStore((state) => state.setStatus);
 
 	useEffect(() => {
-		setCalibrationStatus(CalibrationMode.NEUTRAL);
-
+		setCalibrationStatus(CalibrationMode.SMILE);
 		if (webcamRef.current) {
 			if (webcamRef.current.video) setVideoNode(webcamRef.current.video);
 		}
@@ -43,7 +41,7 @@ const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, vidoeHeight })
 
 	useEffect(() => {
 		if (calibrationStatus === CalibrationStatus.DONE) {
-			router.push('/calibration/smile');
+			router.push('/main');
 		}
 	}, [calibrationStatus, router]);
 
@@ -68,4 +66,4 @@ const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, vidoeHeight })
 	);
 };
 
-export default FaceLandmarkerCalibration;
+export default FaceLandmarkerSmileCalibration;

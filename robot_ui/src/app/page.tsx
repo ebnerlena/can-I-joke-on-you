@@ -1,12 +1,18 @@
-import CalibrationScreen from '@/components/CalibrationScreen';
-import PlayJokes from '@/components/PlayJokes';
 import StartScreen from '@/components/StartScreen';
-import { faceLandmarkerService } from '@/utils/faceLandMarkerService';
 
 export default function Home() {
-	const landmarker = faceLandmarkerService.faceLandmarker;
+	// const applicationStatus = useApplicationStore((state) => state.status);
 
-	return <CalibrationScreen />;
+	// switch (applicationStatus) {
+	// 	case ApplicationStatus.START:
 	return <StartScreen />;
-	return <PlayJokes />;
+	// 	case ApplicationStatus.CALIBRATION:
+	// 		return <CalibrationScreen />;
+	// 	case ApplicationStatus.MAIN:
+	// 		return <PlayJokes />;
+	// 	case ApplicationStatus.END:
+	// 		return <EndScreen />;
+	// 	default:
+	// 		return <>not implemented</>;
+	// }
 }

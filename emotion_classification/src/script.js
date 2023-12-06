@@ -19,8 +19,11 @@ let enableWebcamButton;
 let calibrateWebcamButton;
 let webcamRunning = false;
 let webcamCalibrating = false;
-var blendsDictionary = {"mouthPressLeft":0, "mouthPressRight":0, "mouthSmileLeft":0, "mouthSmileRight":0};
-var calibrationFrames = 0
+var blendsDictionaryNeutral = {"mouthPressLeft":0, "mouthPressRight":0, "mouthSmileLeft":0, "mouthSmileRight":0};
+var blendsDictionarySmile = {"mouthPressLeft":0, "mouthPressRight":0, "mouthSmileLeft":0, "mouthSmileRight":0};
+var calibrationFramesNeutral = 0;
+var calibrationFramesSmile = 0;
+var calibrationPhase = "smile";
 const videoWidth = 480;
 // Before we can use HandLandmarker class we must wait for it to finish
 // loading. Machine Learning models can be large and take a moment to
@@ -89,15 +92,24 @@ function calibrateCam(event) {
         console.log("Wait! faceLandmarker not loaded yet.");
         return;
     }
-    if (webcamCalibrating === true) {
+    if (webcamCalibrating === true && calibrationPhase === "smile") {
         webcamCalibrating = false;
         calibrateWebcamButton.innerText = "START CALIBRATING";
+        calibrationPhase = "smile";
     }
     else {
+        if (calibrationPhase === "smile"){
+            calibrateWebcamButton.innerText = "CURRENTLY NEUTRAL, CLICK TO CALIBRATE SMILE";
+            blendsDictionaryNeutral = {"mouthPressLeft":0, "mouthPressRight":0, "mouthSmileLeft":0, "mouthSmileRight":0};
+            calibrationPhase = "neutral";
+            calibrationFramesNeutral = 0;
+        } else if (calibrationPhase === "neutral") {
+            calibrateWebcamButton.innerText = "CURRENTLY SMILE, CLICK TO STOP CALIBRATION";
+            blendsDictionarySmile = {"mouthPressLeft":0, "mouthPressRight":0, "mouthSmileLeft":0, "mouthSmileRight":0};
+            calibrationPhase = "smile"
+            calibrationFramesSmile = 0;
+        }   
         webcamCalibrating = true;
-        calibrateWebcamButton.innerText = "STOP CALIBRATING";
-        blendsDictionary = {"mouthPressLeft":0, "mouthPressRight":0, "mouthSmileLeft":0, "mouthSmileRight":0};
-        calibrationFrames = 0;
     }
     // getUsermedia parameters.
     const constraints = {
@@ -151,6 +163,7 @@ async function predictWebcam() {
         window.requestAnimationFrame(predictWebcam);
     }
 }
+
 async function storeCalibrations() {
     const radio = video.videoHeight / video.videoWidth;
     video.style.width = videoWidth + "px";
@@ -187,12 +200,19 @@ async function storeCalibrations() {
     for (var key in blendShapes[0].categories) {
         var blendName = blendShapes[0].categories[key].categoryName;
         var blendScore = blendShapes[0].categories[key].score;
-        if (blendName in blendsDictionary) {
-            blendsDictionary[blendName] += blendScore;
+        if (calibrationPhase === "neutral"){
+            if (blendName in blendsDictionaryNeutral) {
+                blendsDictionaryNeutral[blendName] += blendScore;
+            }
+            calibrationFramesNeutral += 1;
+        }
+        else if (calibrationPhase === "smile"){
+            if (blendName in blendsDictionarySmile) {
+                blendsDictionarySmile[blendName] += blendScore;
+            }
+            calibrationFramesSmile += 1;
         }
     }
-    calibrationFrames += 1;
-    console.log(blendsDictionary)
     // Call this function again to keep predicting when the browser is ready.
     if (webcamCalibrating === true) {
         window.requestAnimationFrame(storeCalibrations);
@@ -204,7 +224,8 @@ function drawPredictionOutput(el, blendShapes) {
     if (!blendShapes.length) {
         return;
     }
-    if (blendsDictionary.hasOwnProperty("mouthPressLeft") && blendsDictionary["mouthPressLeft"] === 0) {
+    if ((blendsDictionaryNeutral.hasOwnProperty("mouthPressLeft") && blendsDictionaryNeutral["mouthPressLeft"] === 0) 
+    || (blendsDictionarySmile.hasOwnProperty("mouthPressLeft") && blendsDictionarySmile["mouthPressLeft"] === 0)) {
         let htmlMaker = `
         <li class="blend-shapes-item">
             <span class="blend-shapes-label">Calibrate first!</span>
@@ -214,15 +235,28 @@ function drawPredictionOutput(el, blendShapes) {
         return;
     }
 
-    // Calculate the difference in factor between the neutral state and the current state
+    // Calculate the spectrum between the neutral and smile state
+    // Take the difference between the average of the Smile and Neutral calibration frames
+    // And divide the blendscore by this
     var blendFactors = {"mouthPressLeft":0, "mouthPressRight":0, "mouthSmileLeft":0, "mouthSmileRight":0};
     for (var key in blendShapes[0].categories) {
         var blendName = blendShapes[0].categories[key].categoryName;
         var blendScore = blendShapes[0].categories[key].score;
         if (blendName in blendFactors) {
-            blendFactors[blendName] += blendScore / (blendsDictionary[blendName] / calibrationFrames);
+            blendFactors[blendName] += blendScore / ((blendsDictionarySmile[blendName] / calibrationFramesSmile) - (blendsDictionaryNeutral[blendName] / calibrationFramesNeutral));
         }
     }
+    console.log(blendFactors)
+    // Calculate the difference in factor between the neutral state and the current state
+    // Prediction only on neutral calibration
+    // var blendFactors = {"mouthPressLeft":0, "mouthPressRight":0, "mouthSmileLeft":0, "mouthSmileRight":0};
+    // for (var key in blendShapes[0].categories) {
+    //     var blendName = blendShapes[0].categories[key].categoryName;
+    //     var blendScore = blendShapes[0].categories[key].score;
+    //     if (blendName in blendFactors) {
+    //         blendFactors[blendName] += blendScore / (blendsDictionaryNeutral[blendName] / calibrationFrames);
+    //     }
+    // }
 
     let htmlMaker = ""
     // Draw the separate values for the relevant blends
@@ -236,39 +270,133 @@ function drawPredictionOutput(el, blendShapes) {
     // }
 
     // Calculate the mood and degree
-    var mood;
-    var mouthPressFactor = (blendFactors["mouthPressLeft"] + blendFactors["mouthPressRight"]) / 4
-    if (mouthPressFactor > 1) {
-        mood = "slight smile";
-    } else {
-        mood = "no smile";
-    }
+    // var mood;
+    // var mouthPressFactor = (blendFactors["mouthPressLeft"] + blendFactors["mouthPressRight"]) / 4
+    // if (mouthPressFactor > 1) {
+    //     mood = "slight smile";
+    // } else {
+    //     mood = "no smile";
+    // }
     
-    var mouthSmileFactor = (blendFactors["mouthSmileLeft"] + blendFactors["mouthSmileRight"]) / 500
-    if (mouthSmileFactor > 1) {
-        mood = "big smile";
+    // var mouthSmileFactor = (blendFactors["mouthSmileLeft"] + blendFactors["mouthSmileRight"]) / 250
+    // if (mouthSmileFactor > 1) {
+    //     mood = "big smile";
+    // }
+
+    // htmlMaker += `
+    //     <li class="blend-shapes-item">
+    //         <span class="blend-shapes-label">mouthPressFactor</span>
+    //         <span class="blend-shapes-value">${(+mouthPressFactor).toFixed(4)}</span>
+    //     </li>
+    // `;
+    // htmlMaker += `
+    //     <li class="blend-shapes-item">
+    //         <span class="blend-shapes-label">mouthSmileFactor</span>
+    //         <span class="blend-shapes-value">${(+mouthSmileFactor).toFixed(4)}</span>
+    //     </li>
+    // `;
+
+    // var smile_degree;
+    // if (mouthSmileFactor < 1) {
+    //     if (mouthPressFactor < 1) {
+    //         smile_degree = 0;
+    //     } else if (mouthPressFactor < 2) {
+    //         smile_degree = 1;
+    //     } else if (mouthPressFactor >= 2) {
+    //         smile_degree = 2;
+    //     }
+    // } else if (mouthSmileFactor < 2) {
+    //     smile_degree = 3;
+    // } else if (mouthSmileFactor >= 2) {
+    //     smile_degree = 4;
+    // }
+
+    // Neutral and smile
+    for (var key in blendsDictionaryNeutral){
+        htmlMaker += `
+            <li class="blend-shapes-item">
+                <span class="blend-shapes-label">${key}</span>
+                <span class="blend-shapes-value" style="width: calc(${+blendsDictionaryNeutral[key] / calibrationFramesNeutral * 10000}% - 120px)">${(+blendsDictionaryNeutral[key] / calibrationFramesNeutral).toFixed(4)}</span>
+            </li>
+        `;
     }
 
-    var smile_degree;
-    if (mouthSmileFactor < 1) {
-        if (mouthPressFactor < 1) {
-            smile_degree = 0;
-        } else if (mouthPressFactor < 2) {
-            smile_degree = 1;
-        } else if (mouthPressFactor >= 2) {
-            smile_degree = 2;
-        }
-    } else if (mouthSmileFactor < 2) {
-        smile_degree = 3;
-    } else if (mouthSmileFactor >= 2) {
-        smile_degree = 4;
+    for (var key in blendsDictionarySmile){
+        htmlMaker += `
+            <li class="blend-shapes-item">
+                <span class="blend-shapes-label">${key}</span>
+                <span class="blend-shapes-value" style="width: calc(${+blendsDictionarySmile[key] / calibrationFramesSmile * 10000}% - 120px)">${(+blendsDictionarySmile[key] / calibrationFramesSmile).toFixed(4)}</span>
+            </li>
+        `;
     }
 
     htmlMaker += `
+            <li class="blend-shapes-item">
+                <span class="blend-shapes-label">=======</span>
+            </li>
+        `;
+
+    for (var key in blendFactors){
+        htmlMaker += `
+            <li class="blend-shapes-item">
+                <span class="blend-shapes-label">${key}</span>
+                <span class="blend-shapes-value" style="width: calc(${+blendFactors[key] * 100}% - 120px)">${(+blendFactors[key]).toFixed(4)}</span>
+            </li>
+        `;
+    }
+
+    htmlMaker += `
+            <li class="blend-shapes-item">
+                <span class="blend-shapes-label">=======</span>
+            </li>
+        `;
+
+    for (var key in blendShapes[0].categories) {
+        var blendName = blendShapes[0].categories[key].categoryName;
+        var blendScore = blendShapes[0].categories[key].score;
+        if (blendName === "mouthSmileLeft" || blendName === "mouthSmileRight") {
+            htmlMaker += `
+                <li class="blend-shapes-item">
+                    <span class="blend-shapes-label">${blendName}</span>
+                    <span class="blend-shapes-value" style="width: calc(${+blendScore * 100}% - 120px)">${(+blendScore).toFixed(4)}</span>
+                </li>
+            `;
+        }
+    }
+
+    htmlMaker += `
+            <li class="blend-shapes-item">
+                <span class="blend-shapes-label">=======</span>
+            </li>
+        `;
+
+    var smile_degree = ((blendFactors["mouthSmileLeft"] + blendFactors["mouthSmileRight"]) / 200);
+    if (smile_degree > 1){
+        smile_degree = 1;
+    } else if (smile_degree < 0){
+        smile_degree = 0;
+    }
+    
+    htmlMaker += `
         <li class="blend-shapes-item">
-            <span class="blend-shapes-label">${mood}</span>
+            <span class="blend-shapes-label">Smile degree</span>
             <span class="blend-shapes-value">${smile_degree}</span>
         </li>
     `;
+
+    // htmlMaker += `
+    //     <li class="blend-shapes-item">
+    //         <span class="blend-shapes-label">${mood}</span>
+    //         <span class="blend-shapes-value">${smile_degree}</span>
+    //     </li>
+    // `;
+
+    // htmlMaker += `
+    //     <li class="blend-shapes-item">
+    //         <span class="blend-shapes-label">Extra info</span>
+    //         <span class="blend-shapes-value">${mouthSmileFactor}</span>
+    //     </li>
+    // `;
+
     el.innerHTML = htmlMaker; 
 }

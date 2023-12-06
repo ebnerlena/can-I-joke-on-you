@@ -1,33 +1,22 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useFaceLandmarkDetector } from '../utils/useDetector';
 import Webcam from 'react-webcam';
-import { CalibrationStatus } from '@/types/CalibrationStatus';
 
-const FaceLandmarkerDetection = () => {
+type Props = {
+	onWebcamRefReceived: (videoElement: HTMLVideoElement) => void;
+};
+
+const FaceLandmarkerDetection: React.FC<Props> = ({ onWebcamRefReceived }) => {
 	const webcamRef = useRef<Webcam>(null);
-
-	const {
-		// enableWebcam,
-		isInitialized,
-		mood,
-		smileDegree,
-		calibrationStatus,
-		startCalibration,
-		stopCalibration,
-		predictWebcam,
-		webcamRunning,
-		webcamEnabled,
-		setVideoNode,
-	} = useFaceLandmarkDetector();
-	console.log('Mood: ' + mood, 'Smile Degree: ' + smileDegree);
 
 	useEffect(() => {
 		if (webcamRef.current) {
-			if (webcamRef.current.video) setVideoNode(webcamRef.current.video);
+			if (webcamRef.current.video) {
+				onWebcamRefReceived(webcamRef.current.video);
+			}
 		}
-	}, []);
+	}, [onWebcamRefReceived]);
 
 	const inputResolution = {
 		width: 1080 / 4,
@@ -41,17 +30,7 @@ const FaceLandmarkerDetection = () => {
 	};
 
 	return (
-		<div className="absolute bottom-4 right-4 z-10">
-			<div className="flex gap-1 pb-2 w-full items-center justify-center">
-				<button
-					className="btn"
-					onClick={calibrationStatus === CalibrationStatus.DOING ? stopCalibration : startCalibration}>
-					{calibrationStatus === CalibrationStatus.DOING ? 'Stop calibration' : 'Calibrate'}
-				</button>
-				<button className="btn" onClick={predictWebcam}>
-					Predict
-				</button>
-			</div>
+		<div className="absolute bottom-2 right-4 z-10">
 			<Webcam ref={webcamRef} videoConstraints={videoConstraints} />
 		</div>
 	);

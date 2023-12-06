@@ -2,3 +2,6 @@
 *.csv
 .idea/*
 *.png
+*.task
+*.pb
+*.zip
