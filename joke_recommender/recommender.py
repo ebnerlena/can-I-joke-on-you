@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import pandas as pd
 import numpy as np
 
@@ -15,20 +16,21 @@ jokes_categories = pd.read_csv(JOKES_CATEGORIES)
 n_categories = jokes_categories.shape[0]
 
 app = Flask(__name__)
+CORS(app)
 
 client_profiles = {}
 
 
 def pick_random_joke_in_category(category):
     jokes_in_category = jokes_dataset[jokes_dataset["Cluster"] == category]
-    return jokes_in_category.sample(1)["Joke"]
+    return jokes_in_category.sample(1)["Joke"].tolist()[0]
 
 
 # epsilon-greedy Q-table based recommender
 def recommend_joke(client_id):
     if client_id not in client_profiles:
         client_profiles[client_id] = {
-            "Q-row": np.random.rand(n_categories),
+            "Q-row": np.zeros(n_categories),
             "LastRecoCategory": None,
             "RecoCount": 0,
         }
@@ -37,7 +39,7 @@ def recommend_joke(client_id):
     epsilon = EPSILON - greedyness_progress * (EPSILON - MIN_EPSILON)
 
     if np.random.rand() < epsilon:
-        random_category = jokes_categories.sample(1)["Cluster"]
+        random_category = jokes_categories.sample(1)["Cluster"].tolist()[0]
         random_category_index = jokes_categories.index[
             jokes_categories["Cluster"] == random_category
         ].tolist()[0]
@@ -86,6 +88,17 @@ def rate():
     client_profiles[client_id]["LastRecoCategory"] = None
 
     return jsonify({"status": "success"})
+
+
+@app.route("/categories", methods=["POST"])
+def qrow():
+    client_id = request.json["client_id"]
+    if client_id not in client_profiles:
+        return jsonify({"error": "Client not found."})
+    qrow = client_profiles[client_id]["Q-row"].tolist()
+    categories_names = jokes_categories["Top Words"].tolist()
+
+    return jsonify({"status": "success", "scores": qrow, "categories": categories_names})
 
 
 if __name__ == "__main__":

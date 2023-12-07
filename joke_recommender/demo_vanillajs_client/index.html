@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Jokes Recommender demo UI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <h1>Jokes Recommender demo UI</h1>
+    <div class="input-container">
+        <label for="name-input">Enter your name:</label>
+        <input type="text" id="name-input">
+        <button id="submit-name">Submit</button>
+    </div>
+    <div class="joke-container hidden">
+        <div class="joke-display">
+            <p id="joke-text">Click "Start" to get a joke!</p>
+            <button id="start-btn">Start</button>
+        </div>
+        <div class="rating-section hidden">
+            <input type="range" min="0" max="1" step="0.25" value="0.5" id="rating-slider">
+            <div>
+                <label for="rating-slider">How much did you like it?</label>
+            </div>
+            <button id="next-btn">Next Joke</button>
+        </div>
+        <div class="categories">
+            <p>Categories:</p>
+            <div id="categories-list"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
