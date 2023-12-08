@@ -24,7 +24,7 @@ const SmileCalibrationScreen = () => {
 				<p>
 					We are now doing the <span className="font-bold">SMILE</span> calibration on your face.
 				</p>
-				<p>Please SMILE as big as you can until we are finsihed.</p>
+				<p>Please SMILE as big as you can until we are finished.</p>
 				<p>Seconds: {secondsLeft}</p>
 			</div>
 
