@@ -30,7 +30,7 @@ const CalibrationScreen = () => {
 				<p>Seconds: {secondsLeft}</p>
 			</div>
 
-			<FaceLandmarkerCalibration videoWidth={1080 / 2} vidoeHeight={900 / 2} />
+			<FaceLandmarkerCalibration videoWidth={1080 / 2} videoHeight={900 / 2} />
 		</div>
 	);
 };

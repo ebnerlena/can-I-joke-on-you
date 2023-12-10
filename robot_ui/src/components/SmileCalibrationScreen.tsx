@@ -28,7 +28,7 @@ const SmileCalibrationScreen = () => {
 				<p>Seconds: {secondsLeft}</p>
 			</div>
 
-			<FaceLandmarkerSmileCalibration videoWidth={1080 / 2} vidoeHeight={900 / 2} />
+			<FaceLandmarkerSmileCalibration videoWidth={1080 / 2} videoHeight={900 / 2} />
 		</div>
 	);
 };
