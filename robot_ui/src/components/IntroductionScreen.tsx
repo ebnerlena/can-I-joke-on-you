@@ -1,5 +1,6 @@
 'use client';
 
+import { ROUTES } from '@/constants';
 import { useUserStore } from '@/store/store';
 import { STUDY_ROUND } from '@/types/StudyRound';
 import { postRequest } from '@/utils/backendService';
@@ -55,7 +56,7 @@ const IntroductionScreen = () => {
 			return;
 		}
 
-		router.push('/start');
+		router.push(ROUTES.START_NEUTRAL_CALIBRATION);
 	};
 
 	return (

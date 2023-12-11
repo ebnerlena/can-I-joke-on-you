@@ -7,6 +7,7 @@ import { CalibrationStatus } from '@/types/CalibrationStatus';
 import { useRouter } from 'next/navigation';
 import { useCalibrationStore } from '@/store/store';
 import { CalibrationMode } from '@/types/CalibrationMode';
+import { ROUTES } from '@/constants';
 
 type Props = {
 	videoHeight?: number;
@@ -41,7 +42,7 @@ const FaceLandmarkerSmileCalibration: React.FC<Props> = ({ videoWidth, videoHeig
 
 	useEffect(() => {
 		if (calibrationStatus === CalibrationStatus.DONE) {
-			router.push('/main');
+			router.push(ROUTES.MAIN);
 		}
 	}, [calibrationStatus, router]);
 

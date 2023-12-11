@@ -28,7 +28,7 @@ export const useCalibrationStore = create<CalibrationStore>()(
 			setBlendValues: (blendValues) => set(() => ({ blendValues: blendValues })),
 			smileBlendValues: initialBlendValues,
 			setSmileBlendValues: (smileBlendValues) => set(() => ({ smileBlendValues: smileBlendValues })),
-			status: 0,
+			status: CalibrationMode.NEUTRAL,
 			setStatus: (status) => set(() => ({ status: status })),
 
 			reset: () =>
@@ -47,6 +47,8 @@ export const useCalibrationStore = create<CalibrationStore>()(
 interface ApplicationStore {
 	status: ApplicationStatus;
 	setStatus: (status: ApplicationStatus) => void;
+	error?: string;
+	setError: (error?: string) => void;
 	smileDegree: number;
 	setSmileDegree: (smileDegree: number) => void;
 	uuid?: string;
@@ -64,6 +66,8 @@ export const useApplicationStore = create<ApplicationStore>()(
 		(set) => ({
 			status: ApplicationStatus.START,
 			setStatus: (status) => set(() => ({ status: status })),
+			error: undefined,
+			setError: (error) => set(() => ({ error: error })),
 			smileDegree: 0,
 			setSmileDegree: (smileDegree) => set(() => ({ smileDegree: smileDegree })),
 			studyRound: STUDY_ROUND.A,

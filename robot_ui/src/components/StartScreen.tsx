@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Webcam from 'react-webcam';
 import Image from 'next/image';
+import { ROUTES } from '@/constants';
 
 const StartScreen = () => {
 	const inputResolution = {
@@ -31,7 +32,7 @@ const StartScreen = () => {
 							Press <span className="font-bold">START NEUTRAL CALIBRATION</span> whenever you are ready.
 						</p>
 					</div>
-					<Link href="/calibration" className="btn text-3xl w-fit self-center">
+					<Link href={ROUTES.CALIBRATION} className="btn text-3xl w-fit self-center">
 						Start NEUTRAL Calibration
 					</Link>
 				</div>

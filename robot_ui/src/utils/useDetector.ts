@@ -57,6 +57,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	const smileBlendValuesFromCalibration = useCalibrationStore((state) => state.smileBlendValues);
 	const setSmileBlendValuesFromCalibration = useCalibrationStore((state) => state.setSmileBlendValues);
 	const setMaxSmileDegree = useApplicationStore((state) => state.setSmileDegree);
+	const setErrorMessage = useApplicationStore((state) => state.setError);
 
 	// Refs
 	const calibrateRequestRef = useRef<number>();
@@ -147,7 +148,10 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 			// console.log(results);
 		}
 
-		if (!results || results.faceBlendshapes.length === 0) return;
+		if (!results || results.faceBlendshapes.length === 0) {
+			setErrorMessage("Calibration failed. Couldn't detect face. Please reload the page and try again.");
+			return;
+		}
 
 		const { faceBlendshapes } = results;
 
@@ -258,6 +262,8 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		if (results && results.faceBlendshapes?.length > 0) {
 			const { faceBlendshapes } = results;
 			calculateBlendValuesOnSpectrum(faceBlendshapes);
+		} else {
+			setErrorMessage("Prediction failed. Couldn't detect face. Please reload the page and try again.");
 		}
 	}, [video, calculateBlendValuesOnSpectrum]);
 
@@ -290,6 +296,8 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	}, [calibrationStatus, doCalibration]);
 
 	useEffect(() => {
+		setErrorMessage();
+
 		if (!video) return;
 
 		initFacelandmarks();

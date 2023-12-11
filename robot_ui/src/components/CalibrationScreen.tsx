@@ -3,13 +3,11 @@
 import { useEffect, useState } from 'react';
 import FaceLandmarkerCalibration from './FaceLandmarkerCalibration';
 import { useApplicationStore } from '@/store/store';
-import { ApplicationStatus } from '@/types/ApplicationStatus';
-import { useRouter } from 'next/navigation';
 
 const CalibrationScreen = () => {
 	const [secondsLeft, setSecondsLeft] = useState(0);
 
-	const router = useRouter();
+	const applicationError = useApplicationStore((state) => state.error);
 
 	useEffect(() => {
 		const countdownInterval = setInterval(() => {
@@ -18,7 +16,7 @@ const CalibrationScreen = () => {
 
 		// Clear the interval when the component unmounts
 		return () => clearInterval(countdownInterval);
-	}, [secondsLeft, router]);
+	}, [secondsLeft]);
 
 	return (
 		<div className="w-full  h-full flex flex-col items-center justify-center gap-8 p-12">
@@ -29,6 +27,8 @@ const CalibrationScreen = () => {
 				</p>
 				<p>Seconds: {secondsLeft}</p>
 			</div>
+
+			{applicationError && <p className="text-red-500 py-4">{applicationError}</p>}
 
 			<FaceLandmarkerCalibration videoWidth={1080 / 2} videoHeight={900 / 2} />
 		</div>
