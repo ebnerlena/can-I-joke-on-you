@@ -51,10 +51,6 @@ interface ApplicationStore {
 	setError: (error?: string) => void;
 	smileDegree: number;
 	setSmileDegree: (smileDegree: number) => void;
-	uuid?: string;
-	setUUID: (uuid?: string) => void;
-	studyRound: STUDY_ROUND;
-	setStudyRound: (studyRound: STUDY_ROUND) => void;
 	predictionPageReloaded: boolean;
 	setPredictionPageReloaded: (predictionPageReloaded: boolean) => void;
 
@@ -70,10 +66,6 @@ export const useApplicationStore = create<ApplicationStore>()(
 			setError: (error) => set(() => ({ error: error })),
 			smileDegree: 0,
 			setSmileDegree: (smileDegree) => set(() => ({ smileDegree: smileDegree })),
-			studyRound: STUDY_ROUND.A,
-			setStudyRound: (studyRound) => set(() => ({ studyRound: studyRound })),
-			uuid: undefined,
-			setUUID: (uuid) => set(() => ({ uuid: uuid })),
 			predictionPageReloaded: false,
 			setPredictionPageReloaded: (predictionPageReloaded) =>
 				set(() => ({ predictionPageReloaded: predictionPageReloaded })),

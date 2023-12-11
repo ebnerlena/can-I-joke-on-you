@@ -1,19 +1,23 @@
 type Props = {
+	isMuted: boolean;
+	isPlaying: boolean;
 	onNextClick: () => void;
 	onPlayClick: () => void;
-	onRandomClick: () => void;
+	onMuteClick: () => void;
 };
-const Controls: React.FC<Props> = ({ onNextClick, onPlayClick, onRandomClick }) => {
+const Controls: React.FC<Props> = ({ onNextClick, onPlayClick, onMuteClick, isMuted, isPlaying }) => {
 	return (
-		<div className="flex flex-col gap-1 absolute top-[170px] right-4 z-10">
-			<button className="btn" onClick={onPlayClick}>
-				Play/Stop
+		<div className="flex flex-col gap-2 absolute top-[170px] right-4 z-10 w-44">
+			<button className="btn w-full" onClick={onNextClick}>
+				⏩ NEXT JOKE
 			</button>
-			<button className="btn" onClick={onNextClick}>
-				Next
+
+			<button className="btn w-full" onClick={onPlayClick}>
+				{isPlaying ? '🛑 STOP' : '▶️ TELL ME JOKE'}
 			</button>
-			<button className="btn" onClick={onRandomClick}>
-				Random
+
+			<button className="btn w-full" onClick={onMuteClick}>
+				{!isMuted ? '🔇 MUTE' : '🔊 UNMUTE'}
 			</button>
 		</div>
 	);

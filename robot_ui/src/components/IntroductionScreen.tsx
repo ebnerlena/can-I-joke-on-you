@@ -49,7 +49,7 @@ const IntroductionScreen = () => {
 		}
 
 		try {
-			await postRequest(path, JSON.stringify({ client_id: uuid }));
+			await postRequest(path, { client_id: uuid });
 		} catch (e) {
 			console.log(e);
 			setError("Couldn't connect to the robot. Please refresh and try again.");

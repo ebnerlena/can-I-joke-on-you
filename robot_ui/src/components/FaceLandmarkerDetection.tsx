@@ -19,8 +19,8 @@ const FaceLandmarkerDetection: React.FC<Props> = ({ onWebcamRefReceived }) => {
 	}, [onWebcamRefReceived]);
 
 	const inputResolution = {
-		width: 1080 / 4,
-		height: 900 / 4,
+		width: 1080 / 5,
+		height: 900 / 5,
 	};
 
 	const videoConstraints = {
