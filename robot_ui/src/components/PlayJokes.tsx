@@ -1,30 +1,26 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import Model from './Model';
 import { Canvas } from '@react-three/fiber';
 import { PerspectiveCamera, Text } from '@react-three/drei';
 import Controls from './Controls';
 import FaceLandmarkerDetection from './FaceLandmarkerDetection';
 import { useFaceLandmarkDetector } from '@/utils/useDetector';
-import { useApplicationStore } from '@/store/store';
+import { useApplicationStore, useUserStore } from '@/store/store';
+import { postRequest } from '@/utils/backendService';
 
 const PlayJokes = () => {
-	const [jokes, setJokes] = useState<string[]>([]);
-	const [activeJokeIndex, setActiveJokeIndex] = useState(0);
+	const [joke, setJoke] = useState<string>();
+	const [isMuted, setIsMuted] = useState<boolean>(false);
+	const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+	const timeoutRef = useRef<NodeJS.Timeout>();
 
 	const { smileDegree, setVideoNode, startPrediction, stopPrediction } = useFaceLandmarkDetector();
 	const maxSmileDegree = useApplicationStore((state) => state.smileDegree);
 	const predictionPageReloaded = useApplicationStore((state) => state.predictionPageReloaded);
 	const setPredictionPageReloaded = useApplicationStore((state) => state.setPredictionPageReloaded);
-
-	useEffect(() => {
-		fetch('http://localhost:3000/jokes.json')
-			.then((res) => res.json())
-			.then((jokes) => setJokes(jokes.jokes));
-
-		window.speechSynthesis.cancel();
-	}, []);
+	const uuid = useUserStore((state) => state.uuid);
 
 	useEffect(() => {
 		if (!predictionPageReloaded) {
@@ -35,50 +31,54 @@ const PlayJokes = () => {
 
 	// *************** Jokes  *******************
 	const speakJoke = () => {
+		if (isMuted) return;
+
 		const synth = window.speechSynthesis;
 		const voices = synth.getVoices();
 
-		console.log(voices);
-		console.log(voices.findIndex((voice) => voice.name.includes('Alicia'))); // alicia, zac
+		// console.log(voices);
+		// console.log(voices.findIndex((voice) => voice.name.includes('Alicia'))); // alicia, zac
 
-		const msg = new SpeechSynthesisUtterance(jokes[activeJokeIndex]);
+		const msg = new SpeechSynthesisUtterance(joke);
 		const voiceIndex = 174; // zac = 266 , alicia = 174//13300
 		msg.rate = 1;
 		msg.pitch = 1.2;
 		msg.voice = voices[voiceIndex];
 		msg.lang = voices[voiceIndex]?.lang;
 
-		window.speechSynthesis.speak(msg);
-		startPrediction();
+		synth.speak(msg);
+
+		msg.onend = () => setIsSpeaking(false);
 	};
 
-	useEffect(() => {
-		if (jokes.length <= 0) return;
-
-		setTimeout(() => speakJoke(), 500);
-	}, [activeJokeIndex]);
-
-	const nextJoke = () => {
+	const nextJoke = async () => {
 		window.speechSynthesis.cancel();
-		stopPrediction();
+		const maxSmileDegree = stopPrediction();
 
-		// TODO send maxSmileDegree to recommender and retrieve next joke
+		await postRequest('/rate', { client_id: uuid, rating: maxSmileDegree });
 
-		if (activeJokeIndex === jokes.length - 1) {
-			setActiveJokeIndex(0);
-		} else {
-			setActiveJokeIndex(activeJokeIndex + 1);
-		}
+		await updateJoke();
 	};
 
-	const randomJoke = () => {
-		window.speechSynthesis.cancel();
+	const updateJoke = async () => {
+		const jokeData = await postRequest('/recommend', { client_id: uuid });
 
-		const randomIndex = Math.floor(Math.random() * jokes.length);
-		setActiveJokeIndex(randomIndex);
+		setJoke(jokeData.joke);
+	};
+
+	const prepareNextJokePlaying = () => {
+		//startPrediction();
+		timeoutRef.current = setTimeout(
+			() => {
+				speakJoke();
+			},
+
+			500,
+		);
 	};
 
 	const playJoke = () => {
+		setIsSpeaking(!isSpeaking);
 		if (window.speechSynthesis.speaking) {
 			window.speechSynthesis.cancel();
 		} else {
@@ -86,9 +86,40 @@ const PlayJokes = () => {
 		}
 	};
 
+	const toggleMute = () => {
+		setIsMuted(!isMuted);
+
+		if (window.speechSynthesis.speaking) {
+			window.speechSynthesis.cancel();
+		}
+	};
+
+	useEffect(() => {
+		if (joke === undefined) return;
+
+		// TODO check if this is working
+
+		prepareNextJokePlaying();
+	}, [joke]);
+
+	useEffect(() => {
+		postRequest('/recommend', { client_id: uuid }).then((res) => {
+			setJoke(res.joke);
+		});
+		prepareNextJokePlaying();
+
+		return () => clearTimeout(timeoutRef.current);
+	}, []);
+
 	return (
 		<div className="h-[79vh] w-full flex flex-col items-center justify-center">
-			<Controls onNextClick={nextJoke} onRandomClick={randomJoke} onPlayClick={playJoke} />
+			<Controls
+				onNextClick={nextJoke}
+				onMuteClick={toggleMute}
+				onPlayClick={playJoke}
+				isMuted={isMuted}
+				isPlaying={isSpeaking}
+			/>
 
 			<div className="flex gap-4 mt-1 pb-2 w-full items-center justify-center text-xs">
 				<p className="p-0 m-0">
@@ -107,9 +138,7 @@ const PlayJokes = () => {
 				</button>
 			</div>
 
-			{jokes[activeJokeIndex] && (
-				<p className="mt-20 text-4xl mx-[120px] max-w-[650px] bg-black/20 rounded-lg p-8">{`${jokes[activeJokeIndex]}`}</p>
-			)}
+			{joke && <p className="mt-10 text-xl mx-[120px] max-w-[500px] bg-black/20 rounded-lg p-4">{`${joke}`}</p>}
 
 			<FaceLandmarkerDetection onWebcamRefReceived={setVideoNode} />
 			<Canvas shadows className="w-full">

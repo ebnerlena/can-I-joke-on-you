@@ -6,7 +6,7 @@ export const postRequest = async (url: string, body: any) => {
 		headers: {
 			'Content-Type': 'application/json',
 		},
-		body: body,
+		body: JSON.stringify(body),
 	});
 
 	const data = await response.json();
