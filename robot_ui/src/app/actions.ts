@@ -1,5 +1,6 @@
 'use server';
 
+import { STUDY_ROUND } from '@/types/StudyRound';
 import dayjs from 'dayjs';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import fs, { readFile, writeFile } from 'fs/promises';
@@ -8,10 +9,16 @@ import path from 'path';
 
 export const LOGS_DIR = path.join(process.env.ROOT_DIR || process.cwd(), 'public/logs');
 
-export async function writeLog(startTime: Date, uuid: string, joke: string, smileDegree: number) {
+export async function writeLog(
+	startTime: Date,
+	uuid: string,
+	joke: string,
+	smileDegree: number,
+	studyRound: STUDY_ROUND,
+) {
 	try {
 		const date = dayjs(startTime).format('YYYYMMDDHHmm');
-		const fileName = `${date}_${uuid}.json`;
+		const fileName = `${date}_${uuid}_${studyRound}.json`;
 		const filePath = path.join(LOGS_DIR, fileName);
 
 		let logs = [];

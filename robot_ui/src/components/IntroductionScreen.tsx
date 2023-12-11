@@ -2,8 +2,8 @@
 
 import { useUserStore } from '@/store/store';
 import { STUDY_ROUND } from '@/types/StudyRound';
-import dayjs from 'dayjs';
-import Link from 'next/link';
+import { postRequest } from '@/utils/backendService';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const IntroductionScreen = () => {
@@ -12,8 +12,11 @@ const IntroductionScreen = () => {
 	const uuid = useUserStore((state) => state.uuid);
 	const setUUID = useUserStore((state) => state.setUUID);
 	const setStartTime = useUserStore((state) => state.setStartTime);
+	const [error, setError] = useState<string | undefined>();
 
 	const [id, setId] = useState<string | undefined>();
+
+	const router = useRouter();
 
 	useEffect(() => {
 		setId(uuid);
@@ -33,6 +36,26 @@ const IntroductionScreen = () => {
 		}
 
 		return randomId;
+	};
+
+	const onStartClick = async () => {
+		setStartTime(new Date());
+
+		let path = 'enable';
+
+		if (studyRound === STUDY_ROUND.B) {
+			path = 'disable';
+		}
+
+		try {
+			await postRequest(path, JSON.stringify({ client_id: uuid }));
+		} catch (e) {
+			console.log(e);
+			setError("Couldn't connect to the robot. Please refresh and try again.");
+			return;
+		}
+
+		router.push('/start');
 	};
 
 	return (
@@ -60,7 +83,7 @@ const IntroductionScreen = () => {
 									className="hidden"
 								/>
 								<div
-									className={`w-7 h-7 max-sm:w-5 max-sm:h-5 max-md:w-6 max-md:h-6  border-2 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
+									className={`w-10 h-10 max-sm:w-5 max-sm:h-5 max-md:w-8 max-md:h-8  border-2 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
 										studyRound === STUDY_ROUND.A ? 'bg-primary border-primary' : 'border-primary'
 									}`}></div>
 								<span className="mt-1 max-md:text-md text-xl text-center">{STUDY_ROUND.A}</span>
@@ -76,16 +99,17 @@ const IntroductionScreen = () => {
 									className="hidden"
 								/>
 								<div
-									className={`w-7 h-7 max-sm:w-5 max-sm:h-5 max-md:w-6 max-md:h-6  border-2 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
+									className={`w-10 h-10 max-sm:w-5 max-sm:h-5 max-md:w-8 max-md:h-8  border-2 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
 										studyRound === STUDY_ROUND.B ? 'bg-primary border-primary' : 'border-primary'
 									}`}></div>
 								<span className="mt-1 max-md:text-md text-xl text-center">{STUDY_ROUND.B}</span>
 							</label>
 						</div>
 					</div>
-					<Link href="/start" className="btn text-3xl w-fit self-center" onClick={() => setStartTime(new Date())}>
+					<div className="btn !text-3xl w-fit self-center font-bold !px-8 !py-4" onClick={onStartClick}>
 						START
-					</Link>
+					</div>
+					{error && <p className="text-red-500 w-full">{error}</p>}
 				</div>
 			</div>
 		</div>
