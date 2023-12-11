@@ -37,7 +37,7 @@ type ContextType = Record<
 
 export function Model(props: JSX.IntrinsicElements['group']) {
 	const group = createRef<THREE.Group>();
-	const { nodes, materials, animations } = useGLTF('/bmo_cute.glb') as GLTFResult;
+	const { nodes, materials, animations } = useGLTF('/models/bmo_cute.glb') as GLTFResult;
 	const { actions } = useAnimations(animations, group);
 
 	useEffect(() => {
