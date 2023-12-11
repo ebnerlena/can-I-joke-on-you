@@ -9,11 +9,11 @@ import { useCalibrationStore } from '@/store/store';
 import { CalibrationMode } from '@/types/CalibrationMode';
 
 type Props = {
-	vidoeHeight?: number;
+	videoHeight?: number;
 	videoWidth?: number;
 };
 
-const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, vidoeHeight }) => {
+const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, videoHeight }) => {
 	const webcamRef = useRef<Webcam>(null);
 
 	const [error, setError] = useState<string | null>(null);
@@ -49,7 +49,7 @@ const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, vidoeHeight })
 
 	const inputResolution = {
 		width: videoWidth ?? 1080 / 4,
-		height: vidoeHeight ?? 900 / 4,
+		height: videoHeight ?? 900 / 4,
 	};
 
 	const videoConstraints = {

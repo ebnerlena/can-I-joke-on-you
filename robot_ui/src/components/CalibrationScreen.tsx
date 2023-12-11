@@ -25,12 +25,12 @@ const CalibrationScreen = () => {
 			<div className="text-justify text-xl">
 				<p>We are now doing the calibration on your face.</p>
 				<p>
-					Please just try to keep a <span className="font-bold">NEUTRAL</span> face until we are finsihed.
+					Please just try to keep a <span className="font-bold">NEUTRAL</span> face until we are finished.
 				</p>
 				<p>Seconds: {secondsLeft}</p>
 			</div>
 
-			<FaceLandmarkerCalibration videoWidth={1080 / 2} vidoeHeight={900 / 2} />
+			<FaceLandmarkerCalibration videoWidth={1080 / 2} videoHeight={900 / 2} />
 		</div>
 	);
 };
