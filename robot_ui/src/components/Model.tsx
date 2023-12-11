@@ -86,7 +86,7 @@ export function Model(props: JSX.IntrinsicElements['group']) {
 		</group>
 	);
 }
-useGLTF.preload('/bmo_cute.glb');
+useGLTF.preload('/models/bmo_cute.glb');
 
 // extend({Model})
 
