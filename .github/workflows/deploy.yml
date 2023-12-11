@@ -17,7 +17,7 @@ jobs:
         run: |
           npm install
           npm run build
-        working-directory: ./
+        working-directory: ./robot_ui
 
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@main
