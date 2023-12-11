@@ -45,7 +45,7 @@ def recommend_joke(client_id):
     if np.random.rand() < epsilon:
         q_row = client_profiles[client_id]["Q-row"]
         top_indices = np.argsort(q_row)[:exploratory_area]
-        ranking_probabilities = np.arange(1, exploratory_area+1)[::-1]
+        ranking_probabilities = np.arange(1, exploratory_area+1)
         probabilities = ranking_probabilities / np.sum(ranking_probabilities)
         recommended_category_index = np.random.choice(top_indices, p=probabilities)
 
@@ -73,6 +73,7 @@ def recommend_joke(client_id):
 
 
 def learn(client_id, rating):
+    rating = rating * 2 - 1
     recommendation_index = client_profiles[client_id]["LastRecoCategory"]
     old_value = client_profiles[client_id]["Q-row"][recommendation_index]
     new_value = (1 - LEARNING_RATE) * old_value + LEARNING_RATE * (
