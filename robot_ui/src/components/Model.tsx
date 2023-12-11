@@ -8,7 +8,6 @@ Title: BMO Cute  Model 3D  Free Download
 */
 
 import * as THREE from 'three';
-import { extend } from '@react-three/fiber';
 import React, { createRef, useEffect } from 'react';
 import { useGLTF, useAnimations } from '@react-three/drei';
 import { GLTF } from 'three-stdlib';
