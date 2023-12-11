@@ -4,16 +4,20 @@ import pandas as pd
 import numpy as np
 
 EPSILON = 1.0
-MIN_EPSILON = 0.3
-GREEDYNESS_END = 30
+MIN_EPSILON = 0.1
+GREEDYNESS_END = 60
 JOKES_DATASET = "filtered_jokes_data.csv"
 JOKES_CATEGORIES = "filtered_clusters_data.csv"
 LEARNING_RATE = 0.1
 DISCOUNT_FACTOR = 0.9
+GREEDY_CATEGORIES_SPLIT = 0.3
 
 jokes_dataset = pd.read_csv(JOKES_DATASET)
 jokes_categories = pd.read_csv(JOKES_CATEGORIES)
 n_categories = jokes_categories.shape[0]
+
+greedy_area = int(n_categories * GREEDY_CATEGORIES_SPLIT)
+exploratory_area = n_categories - greedy_area
 
 app = Flask(__name__)
 CORS(app)
@@ -30,7 +34,7 @@ def pick_random_joke_in_category(category):
 def recommend_joke(client_id):
     if client_id not in client_profiles:
         client_profiles[client_id] = {
-            "Q-row": np.zeros(n_categories),
+            "Q-row": np.full(n_categories, 0.5),
             "LastRecoCategory": None,
             "RecoCount": 0,
         }
@@ -39,14 +43,24 @@ def recommend_joke(client_id):
     epsilon = EPSILON - greedyness_progress * (EPSILON - MIN_EPSILON)
 
     if np.random.rand() < epsilon:
-        random_category = jokes_categories.sample(1)["Cluster"].tolist()[0]
-        random_category_index = jokes_categories.index[
-            jokes_categories["Cluster"] == random_category
-        ].tolist()[0]
-        client_profiles[client_id]["LastRecoCategory"] = random_category_index
-        recommended_joke = pick_random_joke_in_category(random_category)
+        q_row = client_profiles[client_id]["Q-row"]
+        top_indices = np.argsort(q_row)[:exploratory_area]
+        ranking_probabilities = np.arange(1, exploratory_area+1)[::-1]
+        probabilities = ranking_probabilities / np.sum(ranking_probabilities)
+        recommended_category_index = np.random.choice(top_indices, p=probabilities)
+
+        recommended_category = jokes_categories.iloc[recommended_category_index][
+            "Cluster"
+        ]
+        client_profiles[client_id]["LastRecoCategory"] = recommended_category_index
+        recommended_joke = pick_random_joke_in_category(recommended_category)
     else:
-        recommended_category_index = np.argmax(client_profiles[client_id]["Q-row"])
+        q_row = client_profiles[client_id]["Q-row"]
+        top_indices = np.argsort(q_row)[-greedy_area:]
+        ranking_probabilities = np.arange(1, greedy_area+1)[::-1]
+        probabilities = ranking_probabilities / np.sum(ranking_probabilities)
+        recommended_category_index = np.random.choice(top_indices, p=probabilities)
+
         recommended_category = jokes_categories.iloc[recommended_category_index][
             "Cluster"
         ]
