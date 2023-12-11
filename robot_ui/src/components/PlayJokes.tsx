@@ -9,6 +9,7 @@ import FaceLandmarkerDetection from './FaceLandmarkerDetection';
 import { useFaceLandmarkDetector } from '@/utils/useDetector';
 import { useApplicationStore, useUserStore } from '@/store/store';
 import { postRequest } from '@/utils/backendService';
+import { writeLog } from '@/app/actions';
 
 const PlayJokes = () => {
 	const [joke, setJoke] = useState<string>();
@@ -21,6 +22,8 @@ const PlayJokes = () => {
 	const predictionPageReloaded = useApplicationStore((state) => state.predictionPageReloaded);
 	const setPredictionPageReloaded = useApplicationStore((state) => state.setPredictionPageReloaded);
 	const uuid = useUserStore((state) => state.uuid);
+	const startTime = useUserStore((state) => state.startTime);
+	const studyRound = useUserStore((state) => state.studyRound);
 
 	useEffect(() => {
 		if (!predictionPageReloaded) {
@@ -55,9 +58,14 @@ const PlayJokes = () => {
 		window.speechSynthesis.cancel();
 		const maxSmileDegree = stopPrediction();
 
-		await postRequest('/rate', { client_id: uuid, rating: maxSmileDegree });
+		try {
+			await writeLog(startTime, uuid, joke, maxSmileDegree, studyRound);
+			await postRequest('/rate', { client_id: uuid, rating: maxSmileDegree });
 
-		await updateJoke();
+			await updateJoke();
+		} catch (err) {
+			console.log(err);
+		}
 	};
 
 	const updateJoke = async () => {
@@ -96,8 +104,6 @@ const PlayJokes = () => {
 
 	useEffect(() => {
 		if (joke === undefined) return;
-
-		// TODO check if this is working
 
 		prepareNextJokePlaying();
 	}, [joke]);

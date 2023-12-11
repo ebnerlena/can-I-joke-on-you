@@ -84,7 +84,7 @@ const IntroductionScreen = () => {
 									className="hidden"
 								/>
 								<div
-									className={`w-10 h-10 max-sm:w-5 max-sm:h-5 max-md:w-8 max-md:h-8  border-2 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
+									className={`w-8 h-8 max-sm:w-5 max-sm:h-5 max-md:w-6 max-md:h-6 border-2 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
 										studyRound === STUDY_ROUND.A ? 'bg-primary border-primary' : 'border-primary'
 									}`}></div>
 								<span className="mt-1 max-md:text-md text-xl text-center">{STUDY_ROUND.A}</span>
@@ -100,14 +100,14 @@ const IntroductionScreen = () => {
 									className="hidden"
 								/>
 								<div
-									className={`w-10 h-10 max-sm:w-5 max-sm:h-5 max-md:w-8 max-md:h-8  border-2 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
+									className={`w-8 h-8 max-sm:w-5 max-sm:h-5 max-md:w-6 max-md:h-6  border-2 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
 										studyRound === STUDY_ROUND.B ? 'bg-primary border-primary' : 'border-primary'
 									}`}></div>
 								<span className="mt-1 max-md:text-md text-xl text-center">{STUDY_ROUND.B}</span>
 							</label>
 						</div>
 					</div>
-					<div className="btn !text-3xl w-fit self-center font-bold !px-8 !py-4" onClick={onStartClick}>
+					<div className="btn  w-fit self-center font-bold !px-4 !py-2" onClick={onStartClick}>
 						START
 					</div>
 					{error && <p className="text-red-500 w-full">{error}</p>}

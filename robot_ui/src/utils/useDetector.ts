@@ -16,7 +16,7 @@ interface FaceLandmarkDetectorType {
 	startCalibration: () => void;
 	stopCalibration: () => void;
 	startPrediction: () => void;
-	stopPrediction: () => void;
+	stopPrediction: () => number | undefined;
 	setVideoNode: (video: HTMLVideoElement) => void;
 }
 

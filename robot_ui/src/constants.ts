@@ -1,3 +1,5 @@
+import path from 'path';
+
 export const BACKEND_URL = `http://localhost:${process.env.BACKEND_PORT ?? 5000}`;
 
 export const ROUTES = {
@@ -9,3 +11,5 @@ export const ROUTES = {
 	MAIN: '/main',
 	END: '/end',
 };
+
+export const LOGS_DIR = path.join(process.env.ROOT_DIR || process.cwd(), 'public/logs');
