@@ -11,6 +11,7 @@ const IntroductionScreen = () => {
 	const setStudyRound = useUserStore((state) => state.setStudyRound);
 	const uuid = useUserStore((state) => state.uuid);
 	const setUUID = useUserStore((state) => state.setUUID);
+	const setStartTime = useUserStore((state) => state.setStartTime);
 
 	const [id, setId] = useState<string | undefined>();
 
@@ -82,7 +83,7 @@ const IntroductionScreen = () => {
 							</label>
 						</div>
 					</div>
-					<Link href="/start" className="btn text-3xl w-fit self-center">
+					<Link href="/start" className="btn text-3xl w-fit self-center" onClick={() => setStartTime(new Date())}>
 						START
 					</Link>
 				</div>

@@ -92,6 +92,8 @@ interface UserStore {
 	setUUID: (uuid?: string) => void;
 	studyRound: STUDY_ROUND;
 	setStudyRound: (studyRound: STUDY_ROUND) => void;
+	startTime?: Date;
+	setStartTime: (startTime?: Date) => void;
 
 	reset: () => void;
 }
@@ -103,11 +105,14 @@ export const useUserStore = create<UserStore>()(
 			setStudyRound: (studyRound) => set(() => ({ studyRound: studyRound })),
 			uuid: undefined,
 			setUUID: (uuid) => set(() => ({ uuid: uuid })),
+			startTime: undefined,
+			setStartTime: (startTime) => set(() => ({ startTime: startTime })),
 
 			reset: () =>
 				set(() => ({
 					studyRound: STUDY_ROUND.A,
 					uuid: undefined,
+					startTime: undefined,
 				})),
 		}),
 		{
