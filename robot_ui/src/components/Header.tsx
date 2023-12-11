@@ -1,6 +1,6 @@
 'use client';
 
-import { useApplicationStore, useCalibrationStore } from '@/store/store';
+import { useApplicationStore, useCalibrationStore, useUserStore } from '@/store/store';
 import { ApplicationStatus } from '@/types/ApplicationStatus';
 import Link from 'next/link';
 import { useCallback } from 'react';
@@ -9,11 +9,13 @@ const Header = () => {
 	const setApplicationStatus = useApplicationStore((state) => state.setStatus);
 	const resetApplicationStore = useApplicationStore((state) => state.reset);
 	const resetCalibrationStore = useCalibrationStore((state) => state.reset);
+	const resetUserStore = useUserStore((state) => state.reset);
 
 	const onRestart = useCallback(() => {
 		resetApplicationStore();
 		resetCalibrationStore();
-	}, [resetApplicationStore, resetCalibrationStore]);
+		resetUserStore();
+	}, [resetApplicationStore, resetCalibrationStore, resetUserStore]);
 
 	const onFinish = useCallback(() => {
 		setApplicationStatus(ApplicationStatus.END);
