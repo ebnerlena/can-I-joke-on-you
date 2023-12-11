@@ -1,0 +1,11 @@
+{
+  "name": "backend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "uvicorn app.main:app --reload --port 8055",
+    "build:docker": "docker build -t joke-recommender-b .",
+    "start:docker": "npm run build:docker && docker run -d -p $(grep BACKEND_PORT ../.env):$(grep BACKEND_PORT ../.env) joke-recommender-b"
+  }
+}

@@ -1,0 +1,27 @@
+version: "3.9"
+networks:
+  joke-recommender:
+services:
+  frontend:
+    build:
+      context: ./robot_ui
+      dockerfile: Dockerfile
+    image: joke-recommender-f:latest
+    ports:
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    environment:
+      - NEXT_PUBLIC_BACKEND_PORT=$BACKEND_PORT
+    networks:
+      - joke-recommender
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./joke_recommender
+      dockerfile: Dockerfile
+    image: joke-recommender-b:latest
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    networks:
+      - joke-recommender
