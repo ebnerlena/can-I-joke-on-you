@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 EPSILON = 1.0
-MIN_EPSILON = 0.1
+MIN_EPSILON = 0.3
 GREEDYNESS_END = 30
 JOKES_DATASET = "filtered_jokes_data.csv"
 JOKES_CATEGORIES = "filtered_clusters_data.csv"
