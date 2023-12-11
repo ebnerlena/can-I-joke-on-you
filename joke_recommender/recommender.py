@@ -37,12 +37,20 @@ def recommend_joke(client_id):
             "Q-row": np.full(n_categories, 0.5),
             "LastRecoCategory": None,
             "RecoCount": 0,
+            "RSdisabled": False
         }
 
     greedyness_progress = client_profiles[client_id]["RecoCount"] / GREEDYNESS_END
     epsilon = EPSILON - greedyness_progress * (EPSILON - MIN_EPSILON)
 
-    if np.random.rand() < epsilon:
+    if client_profiles[client_id]["RSdisabled"]:
+        random_category_index = np.random.randint(n_categories)
+        recommended_category = jokes_categories.iloc[random_category_index][
+            "Cluster"
+        ]
+        client_profiles[client_id]["LastRecoCategory"] = random_category_index
+        recommended_joke = pick_random_joke_in_category(recommended_category)        
+    elif np.random.rand() < epsilon:
         q_row = client_profiles[client_id]["Q-row"]
         top_indices = np.argsort(q_row)[:exploratory_area]
         ranking_probabilities = np.arange(1, exploratory_area+1)
@@ -114,6 +122,24 @@ def qrow():
     categories_names = jokes_categories["Top Words"].tolist()
 
     return jsonify({"status": "success", "scores": qrow, "categories": categories_names})
+
+
+@app.route("/disable", methods=["POST"])
+def disable():
+    client_id = request.json["client_id"]
+    if client_id not in client_profiles:
+        return jsonify({"error": "Client not found."})
+    client_profiles[client_id]["RSdisabled"] = True
+    return jsonify({"status": "success"})
+
+
+@app.route("/enable", methods=["POST"])
+def enable():
+    client_id = request.json["client_id"]
+    if client_id not in client_profiles:
+        return jsonify({"error": "Client not found."})
+    client_profiles[client_id]["RSdisabled"] = False
+    return jsonify({"status": "success"})
 
 
 if __name__ == "__main__":

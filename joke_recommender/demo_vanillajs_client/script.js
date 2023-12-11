@@ -42,6 +42,40 @@ async function rateJoke(clientId, rating) {
 }
 
 
+async function disableRecommendation(clientId) {
+    let response = await fetch('http://localhost:5000/disable', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            client_id: clientId,
+        }),
+    });
+
+    let data = await response.json();
+
+    return data;
+}
+
+
+async function enableRecommendation(clientId) {
+    let response = await fetch('http://localhost:5000/enable', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            client_id: clientId,
+        }),
+    });
+
+    let data = await response.json();
+
+    return data;
+}
+
+
 async function getCategories(clientId) {
     let response = await fetch('http://localhost:5000/categories', {
         method: 'POST',
@@ -72,6 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const ratingSlider = document.getElementById('rating-slider');
     const nextButton = document.getElementById('next-btn');
     const categList = document.getElementById('categories-list');
+    const enabledCheckbox = document.getElementById('recommender-checkbox');
 
     submitNameBtn.addEventListener('click', () => {
         const name = nameInput.value.trim();
@@ -85,6 +120,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     function setupJokeHandler(clientId) {
+        enabledCheckbox.addEventListener('change', async () => {
+            if (enabledCheckbox.checked) {
+                await enableRecommendation(clientId);
+            } else {
+                await disableRecommendation(clientId);
+            }
+        });
+
         startButton.addEventListener('click', async () => {
             let joke = await getJoke(clientId);
             jokeText.textContent = joke;
