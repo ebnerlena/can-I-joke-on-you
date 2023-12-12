@@ -11,7 +11,7 @@ services:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     environment:
       - NEXT_PUBLIC_BACKEND_PORT=$BACKEND_PORT
-      - NEXT_PUBLIC_BACKEND_HOST=backend
+      - NEXT_PUBLIC_BACKEND_HOST=localhost
     volumes:
       - ./robot_ui/public/logs:/app/public/logs
     networks:
