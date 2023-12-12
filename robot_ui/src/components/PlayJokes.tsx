@@ -25,12 +25,26 @@ const PlayJokes = () => {
 	const startTime = useUserStore((state) => state.startTime);
 	const studyRound = useUserStore((state) => state.studyRound);
 
-	useEffect(() => {
-		if (!predictionPageReloaded) {
-			setPredictionPageReloaded(true);
-			window.location.reload();
-		}
-	}, []);
+	const getJokeDisplayStructure = (joke: string) => {
+		const paragraphs = joke
+			.split(/(?<=[.!?])\s+|\[|\]|\s+(?=[A-Z]:)/)
+			.filter(Boolean)
+			.map((paragraph, index) => (
+				<p key={index}>
+					{paragraph.trim().match(/^[A-Z]+:/) ? <br /> : null}
+					{paragraph.trim()}
+				</p>
+			));
+
+		return paragraphs;
+	};
+
+	// useEffect(() => {
+	// 	if (!predictionPageReloaded) {
+	// 		setPredictionPageReloaded(true);
+	// 		window.location.reload();
+	// 	}
+	// }, []);
 
 	// *************** Jokes  *******************
 	const speakJoke = () => {
@@ -75,7 +89,7 @@ const PlayJokes = () => {
 	};
 
 	const prepareNextJokePlaying = () => {
-		//startPrediction();
+		// startPrediction();
 		timeoutRef.current = setTimeout(
 			() => {
 				speakJoke();
@@ -144,17 +158,23 @@ const PlayJokes = () => {
 				</button>
 			</div>
 
-			{joke && <p className="mt-10 text-xl mx-[120px] max-w-[500px] bg-black/20 rounded-lg p-4">{`${joke}`}</p>}
+			{joke && (
+				<div className="w-full justify-center">
+					<div className="mt-10 text-xl mx-[120px] max-w-[600px] w-fit bg-black/20 rounded-lg p-4">
+						{getJokeDisplayStructure(joke)}
+					</div>
+				</div>
+			)}
 
 			<FaceLandmarkerDetection onWebcamRefReceived={setVideoNode} />
-			<Canvas shadows className="w-full">
+			<Canvas shadows className="w-full mr-0">
 				<PerspectiveCamera
 					makeDefault
 					position={[0, 20, 18]}
 					fov={75}
 					near={0.01}
 					far={1000}
-					rotation={[(-15 * Math.PI) / 180, 0, 0]}
+					rotation={[(-5 * Math.PI) / 180, 0, 0]}
 				/>
 				<hemisphereLight intensity={2} color="#ffffff" groundColor="#8d8d8d" position={[0, 50, 0]} />
 				<directionalLight
@@ -170,7 +190,7 @@ const PlayJokes = () => {
 					shadow-camera-far={40}
 				/>
 				<Suspense>
-					<Model position={[0, 5, 0]} scale={[5, 5, 5]} rotation={[0, (178 * Math.PI) / 180, 0]} />
+					<Model position={[-15, 5, 0]} scale={[6, 6, 6]} rotation={[0, (-170 * Math.PI) / 180, 0]} />
 				</Suspense>
 			</Canvas>
 		</div>
