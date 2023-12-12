@@ -51,8 +51,8 @@ interface ApplicationStore {
 	setError: (error?: string) => void;
 	smileDegree: number;
 	setSmileDegree: (smileDegree: number) => void;
-	predictionPageReloaded: boolean;
-	setPredictionPageReloaded: (predictionPageReloaded: boolean) => void;
+	showDebugInfo: boolean;
+	setShowDebugInfo: (showDebugInfo: boolean) => void;
 
 	reset: () => void;
 }
@@ -66,9 +66,8 @@ export const useApplicationStore = create<ApplicationStore>()(
 			setError: (error) => set(() => ({ error: error })),
 			smileDegree: 0,
 			setSmileDegree: (smileDegree) => set(() => ({ smileDegree: smileDegree })),
-			predictionPageReloaded: false,
-			setPredictionPageReloaded: (predictionPageReloaded) =>
-				set(() => ({ predictionPageReloaded: predictionPageReloaded })),
+			showDebugInfo: false,
+			setShowDebugInfo: (showDebugInfo) => set(() => ({ showDebugInfo: showDebugInfo })),
 
 			reset: () =>
 				set(() => ({

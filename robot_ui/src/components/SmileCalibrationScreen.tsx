@@ -28,7 +28,7 @@ const SmileCalibrationScreen = () => {
 				<p>Seconds: {secondsLeft}</p>
 			</div>
 
-			{applicationError && <p className="text-red-500 py-4">{applicationError}</p>}
+			{applicationError && <p className="text-red-500 py-1">{applicationError}</p>}
 
 			<FaceLandmarkerSmileCalibration videoWidth={1080 / 2} videoHeight={900 / 2} />
 		</div>

@@ -8,6 +8,7 @@ const CalibrationScreen = () => {
 	const [secondsLeft, setSecondsLeft] = useState(0);
 
 	const applicationError = useApplicationStore((state) => state.error);
+	const [error, setError] = useState<string | undefined>();
 
 	useEffect(() => {
 		const countdownInterval = setInterval(() => {
@@ -17,6 +18,10 @@ const CalibrationScreen = () => {
 		// Clear the interval when the component unmounts
 		return () => clearInterval(countdownInterval);
 	}, [secondsLeft]);
+
+	useEffect(() => {
+		setError(applicationError);
+	}, [applicationError]);
 
 	return (
 		<div className="w-full  h-full flex flex-col items-center justify-center gap-8 p-12">
@@ -28,7 +33,7 @@ const CalibrationScreen = () => {
 				<p>Seconds: {secondsLeft}</p>
 			</div>
 
-			{applicationError && <p className="text-red-500 py-4">{applicationError}</p>}
+			{error && <p className="text-red-500 py-1">{error}</p>}
 
 			<FaceLandmarkerCalibration videoWidth={1080 / 2} videoHeight={900 / 2} />
 		</div>

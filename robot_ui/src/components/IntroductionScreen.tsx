@@ -62,18 +62,18 @@ const IntroductionScreen = () => {
 	return (
 		<div className="h-full w-full flex flex-col items-center justify-center gap-8 p-12">
 			<div className="flex flex-col items-center gap-16 w-full justify-center">
-				<div className="flex flex-col gap-4">
+				<div className="flex flex-col gap-2">
 					<div className="text-justify text-xl max-w-[1000px]">
 						<h2 className="font-bold pb-2 text-2xl">Welcome!</h2>
 						<p>We are glad to have you on our study.</p>
 						<p>First we will do some configurations, afterwards laughers are guranteed. :) </p>
 
-						<p className="pt-8">
+						<p className="pt-4">
 							<span className="font-bold">UUID:</span> {id}
 						</p>
 
-						<p className="pt-8">Please select what the person you are doing the study with is telling you. </p>
-						<div className="flex gap-12 w-full justify-center py-8">
+						<p className="pt-4">Please select what the person you are doing the study with is telling you. </p>
+						<div className="flex gap-12 w-full justify-center py-6 ">
 							<label key={'a'} className="flex flex-col items-center mb-2">
 								<input
 									type="radio"
@@ -107,7 +107,7 @@ const IntroductionScreen = () => {
 							</label>
 						</div>
 					</div>
-					<div className="btn  w-fit self-center font-bold !px-4 !py-2" onClick={onStartClick}>
+					<div className="btn w-fit self-center font-bold !px-4 !py-2" onClick={onStartClick}>
 						START
 					</div>
 					{error && <p className="text-red-500 w-full">{error}</p>}

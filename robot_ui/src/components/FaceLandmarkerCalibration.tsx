@@ -19,7 +19,7 @@ const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, videoHeight })
 
 	const [error, setError] = useState<string | null>(null);
 
-	const { activateWebcamStream, startCalibration, setVideoNode, calibrationStatus } = useFaceLandmarkDetector();
+	const { startCalibration, setVideoNode, calibrationStatus } = useFaceLandmarkDetector();
 	const router = useRouter();
 	const setCalibrationStatus = useCalibrationStore((state) => state.setStatus);
 
@@ -37,7 +37,6 @@ const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, videoHeight })
 			return;
 		} else {
 			setError(null);
-			//startCalibration();
 
 			setTimeout(() => startCalibration(), 1000);
 		}

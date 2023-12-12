@@ -19,8 +19,8 @@ const PlayJokes = () => {
 
 	const { smileDegree, setVideoNode, startPrediction, stopPrediction } = useFaceLandmarkDetector();
 	const maxSmileDegree = useApplicationStore((state) => state.smileDegree);
-	const predictionPageReloaded = useApplicationStore((state) => state.predictionPageReloaded);
-	const setPredictionPageReloaded = useApplicationStore((state) => state.setPredictionPageReloaded);
+	const showDebugInfo = useApplicationStore((state) => state.showDebugInfo);
+	const setShowDebugInfo = useApplicationStore((state) => state.setShowDebugInfo);
 	const uuid = useUserStore((state) => state.uuid);
 	const startTime = useUserStore((state) => state.startTime);
 	const studyRound = useUserStore((state) => state.studyRound);
@@ -38,13 +38,6 @@ const PlayJokes = () => {
 
 		return paragraphs;
 	};
-
-	// useEffect(() => {
-	// 	if (!predictionPageReloaded) {
-	// 		setPredictionPageReloaded(true);
-	// 		window.location.reload();
-	// 	}
-	// }, []);
 
 	// *************** Jokes  *******************
 	const speakJoke = () => {
@@ -75,10 +68,10 @@ const PlayJokes = () => {
 		try {
 			await writeLog(startTime, uuid, joke, maxSmileDegree, studyRound);
 			await postRequest('/rate', { client_id: uuid, rating: maxSmileDegree });
-
-			await updateJoke();
 		} catch (err) {
 			console.log(err);
+		} finally {
+			await updateJoke();
 		}
 	};
 
@@ -89,10 +82,10 @@ const PlayJokes = () => {
 	};
 
 	const prepareNextJokePlaying = () => {
-		// startPrediction();
 		timeoutRef.current = setTimeout(
 			() => {
 				speakJoke();
+				startPrediction();
 			},
 
 			500,
@@ -141,26 +134,33 @@ const PlayJokes = () => {
 				isPlaying={isSpeaking}
 			/>
 
-			<div className="flex gap-4 mt-1 pb-2 w-full items-center justify-center text-xs">
-				<p className="p-0 m-0">
-					<span className="font-bold">Smile Degree: </span>
-					{smileDegree.toFixed(4)}
-				</p>
-				<p className="p-0 m-0">
-					<span className="font-bold">Last Max Smile Degree: </span>
-					{maxSmileDegree.toFixed(4)}
-				</p>
-				<button className="text-xs underline" onClick={stopPrediction}>
-					Stop Prediction
-				</button>
-				<button className="text-xs underline" onClick={startPrediction}>
-					Predict
-				</button>
-			</div>
+			{showDebugInfo ? (
+				<div className="flex gap-4 mt-1 pb-2 w-full items-center justify-center text-xs">
+					<p className="p-0 m-0">
+						<span className="font-bold">Smile Degree: </span>
+						{smileDegree.toFixed(4)}
+					</p>
+					<p className="p-0 m-0">
+						<span className="font-bold">Last Max Smile Degree: </span>
+						{maxSmileDegree.toFixed(4)}
+					</p>
+					<button className="text-xs underline" onClick={stopPrediction}>
+						Stop Prediction
+					</button>
+					<button className="text-xs underline" onClick={startPrediction}>
+						Predict
+					</button>
+					<button className="text-xs" onClick={() => setShowDebugInfo(!showDebugInfo)}>
+						Toggle Debug Info
+					</button>
+				</div>
+			) : (
+				<></>
+			)}
 
 			{joke && (
 				<div className="w-full justify-center">
-					<div className="mt-10 text-xl mx-[120px] max-w-[600px] min-w-[200px] w-fit bg-black/20 rounded-lg p-4">
+					<div className="mt-10 text-xl ml-10 mr-[200px] max-w-[600px] min-w-[200px] w-fit bg-black/20 rounded-lg p-4">
 						{getJokeDisplayStructure(joke)}
 					</div>
 				</div>

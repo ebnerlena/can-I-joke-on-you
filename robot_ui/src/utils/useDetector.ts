@@ -307,7 +307,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 			predictRequestRef.current && cancelAnimationFrame(predictRequestRef.current);
 			predictionIntervalRef.current && clearInterval(predictionIntervalRef.current);
 		};
-	}, [initFacelandmarks, video]);
+	}, [initFacelandmarks, setErrorMessage, video]);
 
 	return {
 		calibrationStatus: calibrationStatus,
