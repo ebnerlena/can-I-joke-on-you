@@ -160,7 +160,7 @@ const PlayJokes = () => {
 
 			{joke && (
 				<div className="w-full justify-center">
-					<div className="mt-10 text-xl mx-[120px] max-w-[600px] w-fit bg-black/20 rounded-lg p-4">
+					<div className="mt-10 text-xl mx-[120px] max-w-[600px] min-w-[200px] w-fit bg-black/20 rounded-lg p-4">
 						{getJokeDisplayStructure(joke)}
 					</div>
 				</div>
