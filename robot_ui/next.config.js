@@ -2,14 +2,14 @@
 const nextConfig = {
 	reactStrictMode: false,
 	output: 'standalone',
-	async rewrites() {
-		return [
-			{
-				source: '/api/:path*',
-				destination: 'http://localhost:5000/:path*',
-			},
-		];
-	},
+	// async rewrites() {
+	// 	return [
+	// 		{
+	// 			source: '/api/:path*',
+	// 			destination: `http://${process.env.NEXT_PUBLIC_BACKEND_HOST}:${process.env.NEXT_PUBLIC_BACKEND_PORT}/:path*`,
+	// 		},
+	// 	];
+	// },
 };
 
 module.exports = nextConfig;

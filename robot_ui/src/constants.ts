@@ -1,6 +1,6 @@
 import path from 'path';
 
-export const BACKEND_URL = `http://localhost:${process.env.BACKEND_PORT ?? 5000}`;
+export const BACKEND_URL = `http://localhost:${process.env.NEXT_PUBLIC_BACKEND_PORT ?? 5000}`;
 
 export const ROUTES = {
 	HOME: '/',

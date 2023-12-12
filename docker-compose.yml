@@ -11,6 +11,9 @@ services:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     environment:
       - NEXT_PUBLIC_BACKEND_PORT=$BACKEND_PORT
+      - NEXT_PUBLIC_BACKEND_HOST=backend
+    volumes:
+      - ./robot_ui/public/logs:/app/public/logs
     networks:
       - joke-recommender
     depends_on:
