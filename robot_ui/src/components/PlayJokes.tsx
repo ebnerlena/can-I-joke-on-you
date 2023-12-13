@@ -118,7 +118,6 @@ const PlayJokes = () => {
 		postRequest('/recommend', { client_id: uuid }).then((res) => {
 			setJoke(res.joke);
 		});
-		prepareNextJokePlaying();
 
 		return () => clearTimeout(timeoutRef.current);
 	}, []);
@@ -132,32 +131,33 @@ const PlayJokes = () => {
 				isMuted={isMuted}
 				isPlaying={isSpeaking}
 			/>
-			<button
-				className="text-xs underline cursor-pointer absolute right-12 top-[90px]"
-				onClick={() => setShowDebugInfo(!showDebugInfo)}>
-				Toggle Debug Info
-			</button>
-
-			{showDebugInfo ? (
-				<div className="flex gap-4 mt-1 pb-2 w-full items-center justify-center text-xs">
-					<p className="p-0 m-0">
-						<span className="font-bold">Smile Degree: </span>
-						{smileDegree.toFixed(4)}
-					</p>
-					<p className="p-0 m-0">
-						<span className="font-bold">Last Max Smile Degree: </span>
-						{maxSmileDegree.toFixed(4)}
-					</p>
-					<button className="text-xs underline" onClick={stopPrediction}>
-						Stop Prediction
-					</button>
-					<button className="text-xs underline" onClick={startPrediction}>
-						Predict
-					</button>
-				</div>
-			) : (
-				<></>
-			)}
+			<div className="flex w-full items-end justify-between my-1 px-8">
+				{showDebugInfo ? (
+					<div className="flex gap-4  items-center justify-center text-xs self-center">
+						<p className="p-0 m-0">
+							<span className="font-bold">Smile Degree: </span>
+							{smileDegree.toFixed(4)}
+						</p>
+						<p className="p-0 m-0">
+							<span className="font-bold">Last Max Smile Degree: </span>
+							{maxSmileDegree.toFixed(4)}
+						</p>
+						<button className="text-xs underline" onClick={stopPrediction}>
+							Stop Prediction
+						</button>
+						<button className="text-xs underline" onClick={startPrediction}>
+							Predict
+						</button>
+					</div>
+				) : (
+					<div />
+				)}
+				<button
+					className="text-xs underline cursor-pointer justify-end w-fit"
+					onClick={() => setShowDebugInfo(!showDebugInfo)}>
+					Toggle Debug Info
+				</button>
+			</div>
 
 			{joke && (
 				<div className="w-full justify-center mr-[400px] flex px-20 max-md:mr-[50px]  max-lg:mr-[100px] max-md:mxl-[200px]">

@@ -39,6 +39,7 @@ let predictionRunning = false;
 export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	const [faceLandmarker, setFaceLandmarker] = useState<FaceLandmarker>();
 	const [isInitialized, setIsInitialized] = useState<boolean>(false);
+	const [isPredicting, setIsPredicting] = useState<boolean>(false);
 	const [video, setVideo] = useState<HTMLVideoElement | null>(null);
 	const [webcamRunning, setWebcamRunning] = useState<boolean>(false);
 	const [webcamEnabled, setWebcamEnabled] = useState<boolean>(false);
@@ -207,32 +208,35 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 		// Pushing smileDegree to shifting array
 		smileDegrees[lastSmileDegreeHeadIdx] = tmpSmileDegree;
-		lastSmileDegreeHeadIdx += 1 % smileDegrees.length;
+		lastSmileDegreeHeadIdx = (lastSmileDegreeHeadIdx + 1) % smileDegrees.length;
 
 		// Update average and max smile degree
 		const tmpAvgSmileDegree = smileDegrees.reduce((acc, num) => acc + num, 0) / smileDegrees.length;
 		setSmileDegree(tmpSmileDegree);
 		if (tmpAvgSmileDegree > currentMaxSmileDegree) {
 			currentAvgSmileDegree = tmpAvgSmileDegree;
+
+			// console.log('currentMaxSmileDegree Update', Math.max(...smileDegrees), smileDegrees);
 			currentMaxSmileDegree = Math.max(...smileDegrees);
 		}
 
-		console.log('set smile degree: ', tmpSmileDegree);
+		// console.log('set smile degree: ', tmpSmileDegree);
 	};
 
 	const startPrediction = () => {
 		console.log('startPrediction');
 		predictionRunning = true;
+		setIsPredicting(true);
 		smileDegrees = Array(100).fill(0);
 		currentMaxSmileDegree = 0;
 		currentAvgSmileDegree = 0;
 
-		predictRequestRef.current = requestAnimationFrame(predictWebcam);
+		// predictRequestRef.current = requestAnimationFrame(predictWebcam);
 
-		predictionIntervalRef.current = setInterval(
-			() => (predictRequestRef.current = requestAnimationFrame(predictWebcam)),
-			PREDICTION_INTERVAL,
-		);
+		// predictionIntervalRef.current = setInterval(
+		// 	() => (predictRequestRef.current = requestAnimationFrame(predictWebcam)),
+		// 	PREDICTION_INTERVAL,
+		// );
 	};
 
 	const stopPrediction = () => {
@@ -241,6 +245,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 		console.log('final max smile degree predicted', currentMaxSmileDegree);
 		predictionRunning = false;
+		setIsPredicting(false);
 		setMaxSmileDegree(currentMaxSmileDegree);
 		clearInterval(predictionIntervalRef.current);
 
@@ -262,10 +267,12 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		if (results && results.faceBlendshapes?.length > 0) {
 			const { faceBlendshapes } = results;
 			calculateBlendValuesOnSpectrum(faceBlendshapes);
-		} else {
-			setErrorMessage("Prediction failed. Couldn't detect face. Please reload the page and try again.");
 		}
-	}, [video, calculateBlendValuesOnSpectrum]);
+
+		if (isPredicting) {
+			predictRequestRef.current = requestAnimationFrame(predictWebcam);
+		}
+	}, [video, calculateBlendValuesOnSpectrum, isPredicting]);
 
 	// ************ UseEffects ************
 	useEffect(() => {
@@ -275,6 +282,14 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 			calibrateRequestRef.current = requestAnimationFrame(doCalibration);
 		}
 	}, [calibrationStatus, doCalibration, isInitialized]);
+
+	useEffect(() => {
+		if (!isInitialized || !webcamEnabled || !webcamRunning) return;
+
+		if (isPredicting) {
+			predictRequestRef.current = requestAnimationFrame(predictWebcam);
+		}
+	}, [isPredicting, isInitialized]);
 
 	useEffect(() => {
 		setErrorMessage();
