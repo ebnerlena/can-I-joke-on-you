@@ -15,6 +15,10 @@ const Header = () => {
 		resetApplicationStore();
 		resetCalibrationStore();
 		resetUserStore();
+
+		if (window.speechSynthesis.speaking) {
+			window.speechSynthesis.cancel();
+		}
 	}, [resetApplicationStore, resetCalibrationStore, resetUserStore]);
 
 	const onFinish = useCallback(() => {
