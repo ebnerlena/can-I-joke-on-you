@@ -40,3 +40,5 @@ next-env.d.ts
 **/logs/**
 !**/logs/README.md
 !**/logs/page.tsx
+
+!*.png
