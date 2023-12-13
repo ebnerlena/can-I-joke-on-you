@@ -65,8 +65,8 @@ const IntroductionScreen = () => {
 				<div className="flex flex-col gap-2">
 					<div className="text-justify text-xl max-w-[1000px]">
 						<h2 className="font-bold pb-2 text-2xl">Welcome!</h2>
-						<p>We are glad to have you on our study.</p>
-						<p>First we will do some configurations, afterwards laughers are guranteed. :) </p>
+						<p>We are glad to have you on our study!</p>
+						<p>First we will do some configurations, afterwards laughters are guaranteed :) </p>
 
 						<p className="pt-4">
 							<span className="font-bold">UUID:</span> {id}
