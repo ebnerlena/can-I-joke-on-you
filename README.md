@@ -36,3 +36,18 @@ A robot that tells jokes to the user. Able to detect the user’s facial express
   - https://www.kaggle.com/datasets/ananthu017/emotion-detection-fer
   - https://www.kaggle.com/datasets/chazzer/smiling-or-not-face-data
 - Three.js https://threejs.org/examples/#webgl_animation_skinning_morph
+
+## Deployment
+
+VM IP: 193.170.119.173
+
+- Frontend https://joke.servegame.com
+- Backend http://joke-api.servegame.com
+
+- install https certificat `sudo certbot --nginx --agree-tos --preferred-challenges http -d joke.servegame.com`
+- both were started with pm2 and nginx reverse proxy
+  - `pm2 start recommender.py --interpreter python3 --name "recommender"`
+  - `pm2 start npm --name "robotui" -- start`
+- `pm2 monit`
+- `pm2 status`
+- `pm2 logs`
