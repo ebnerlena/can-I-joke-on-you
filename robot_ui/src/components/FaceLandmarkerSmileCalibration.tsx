@@ -18,7 +18,7 @@ const FaceLandmarkerSmileCalibration: React.FC<Props> = ({ videoWidth, videoHeig
 	const webcamRef = useRef<Webcam>(null);
 	const [error, setError] = useState<string | null>(null);
 
-	const { activateWebcamStream, startCalibration, setVideoNode, calibrationStatus } = useFaceLandmarkDetector();
+	const { startCalibration, setVideoNode, calibrationStatus } = useFaceLandmarkDetector();
 	const router = useRouter();
 	const setCalibrationStatus = useCalibrationStore((state) => state.setStatus);
 
