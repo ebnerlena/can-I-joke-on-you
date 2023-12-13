@@ -19,6 +19,13 @@ jobs:
           npm run build
         working-directory: ./robot_ui
 
+      - name: Create .env File
+        run: |
+          echo "$SECRET_ENV_FILE" > .env.local
+        env:
+          SECRET_ENV_FILE: ${{ secrets.ENV_FILE }}
+        working-directory: ./robot_ui
+
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@main
         with:
