@@ -13,13 +13,15 @@ import { writeLog } from '@/app/actions';
 
 const PlayJokes = () => {
 	const [joke, setJoke] = useState<string>();
-	const [isMuted, setIsMuted] = useState<boolean>(false);
+	const [isMuted, setIsMuted] = useState<boolean>(true);
 	const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+	const [showDebugInfo, setShowDebugInfo] = useState(false);
+
 	const timeoutRef = useRef<NodeJS.Timeout>();
 
 	const { smileDegree, setVideoNode, startPrediction, stopPrediction } = useFaceLandmarkDetector();
+
 	const maxSmileDegree = useApplicationStore((state) => state.smileDegree);
-	const [showDebugInfo, setShowDebugInfo] = useState(false);
 	const uuid = useUserStore((state) => state.uuid);
 	const startTime = useUserStore((state) => state.startTime);
 	const studyRound = useUserStore((state) => state.studyRound);
@@ -45,13 +47,13 @@ const PlayJokes = () => {
 		const synth = window.speechSynthesis;
 		const voices = synth.getVoices();
 
-		// console.log(voices);
-		// console.log(voices.findIndex((voice) => voice.name.includes('Alicia'))); // alicia, zac
+		//console.log(voices);
+		//console.log(voices.findIndex((voice) => voice.name.includes('Steph'))); //steph, alicia, zac
 
 		const msg = new SpeechSynthesisUtterance(joke);
-		const voiceIndex = 174; // zac = 266 , alicia = 174//13300
-		msg.rate = 1;
-		msg.pitch = 1.2;
+		const voiceIndex = 10; // steph = 10 , zac = 266 , alicia = 174
+		msg.rate = 1.1;
+		msg.pitch = 1.1;
 		msg.voice = voices[voiceIndex];
 		msg.lang = voices[voiceIndex]?.lang;
 
@@ -96,6 +98,7 @@ const PlayJokes = () => {
 		if (window.speechSynthesis.speaking) {
 			window.speechSynthesis.cancel();
 		} else {
+			setIsMuted(false);
 			speakJoke();
 		}
 	};
