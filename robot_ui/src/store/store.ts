@@ -51,8 +51,6 @@ interface ApplicationStore {
 	setError: (error?: string) => void;
 	smileDegree: number;
 	setSmileDegree: (smileDegree: number) => void;
-	showDebugInfo: boolean;
-	setShowDebugInfo: (showDebugInfo: boolean) => void;
 
 	reset: () => void;
 }
@@ -66,14 +64,13 @@ export const useApplicationStore = create<ApplicationStore>()(
 			setError: (error) => set(() => ({ error: error })),
 			smileDegree: 0,
 			setSmileDegree: (smileDegree) => set(() => ({ smileDegree: smileDegree })),
-			showDebugInfo: false,
-			setShowDebugInfo: (showDebugInfo) => set(() => ({ showDebugInfo: showDebugInfo })),
 
 			reset: () =>
 				set(() => ({
 					status: ApplicationStatus.START,
 					smileDegree: 0,
 					predictionPageReloaded: false,
+					error: undefined,
 				})),
 		}),
 		{

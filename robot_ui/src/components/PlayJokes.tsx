@@ -19,8 +19,7 @@ const PlayJokes = () => {
 
 	const { smileDegree, setVideoNode, startPrediction, stopPrediction } = useFaceLandmarkDetector();
 	const maxSmileDegree = useApplicationStore((state) => state.smileDegree);
-	const showDebugInfo = useApplicationStore((state) => state.showDebugInfo);
-	const setShowDebugInfo = useApplicationStore((state) => state.setShowDebugInfo);
+	const [showDebugInfo, setShowDebugInfo] = useState(false);
 	const uuid = useUserStore((state) => state.uuid);
 	const startTime = useUserStore((state) => state.startTime);
 	const studyRound = useUserStore((state) => state.studyRound);
@@ -133,6 +132,11 @@ const PlayJokes = () => {
 				isMuted={isMuted}
 				isPlaying={isSpeaking}
 			/>
+			<button
+				className="text-xs underline cursor-pointer absolute right-12 top-[90px]"
+				onClick={() => setShowDebugInfo(!showDebugInfo)}>
+				Toggle Debug Info
+			</button>
 
 			{showDebugInfo ? (
 				<div className="flex gap-4 mt-1 pb-2 w-full items-center justify-center text-xs">
@@ -150,17 +154,14 @@ const PlayJokes = () => {
 					<button className="text-xs underline" onClick={startPrediction}>
 						Predict
 					</button>
-					<button className="text-xs" onClick={() => setShowDebugInfo(!showDebugInfo)}>
-						Toggle Debug Info
-					</button>
 				</div>
 			) : (
 				<></>
 			)}
 
 			{joke && (
-				<div className="w-full justify-center">
-					<div className="mt-10 text-xl ml-10 mr-[200px] max-w-[600px] min-w-[200px] w-fit bg-black/20 rounded-lg p-4">
+				<div className="w-full justify-center mr-[400px] flex px-20 max-md:mr-[50px]  max-lg:mr-[100px] max-md:mxl-[200px]">
+					<div className="mt-10 text-xl max-w-[600px] min-w-[200px] w-fit bg-black/20 rounded-lg p-4">
 						{getJokeDisplayStructure(joke)}
 					</div>
 				</div>
