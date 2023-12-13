@@ -12,7 +12,6 @@ interface FaceLandmarkDetectorType {
 	webcamEnabled: boolean;
 	smileDegree: number;
 	isInitialized: boolean;
-	activateWebcamStream: (callback: () => void) => void;
 	startCalibration: () => void;
 	stopCalibration: () => void;
 	startPrediction: () => void;
@@ -84,17 +83,17 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 	const startCalibration = useCallback(() => {
 		console.log('startCalibration');
-		if (!video) {
-			console.log('Wait! video not loaded yet.');
-			return;
-		}
+		// if (!video) {
+		// 	console.log('Wait! video not loaded yet.');
+		// 	return;
+		// }
 
 		setCalibrationBlendValues({
 			mouthSmileLeft: [],
 			mouthSmileRight: [],
 		});
 		setCalibrationStatus(CalibrationStatus.DOING);
-	}, [video]);
+	}, []);
 
 	const storeCalibrations = useCallback(async () => {
 		console.log('storeCalibrations', calibrationBlendValues);
@@ -145,13 +144,14 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		if (lastVideoTime !== video.currentTime) {
 			lastVideoTime = video.currentTime;
 			results = faceLandmarkerService.faceLandmarker.detectForVideo(video, startTimeMs);
-			// console.log(results);
 		}
 
-		if (!results || results.faceBlendshapes.length === 0) {
-			setErrorMessage("Calibration failed. Couldn't detect face. Please reload the page and try again.");
-			return;
+		// just retry in case results are array with length 0
+		while (!results || results.faceBlendshapes.length === 0) {
+			setErrorMessage("Calibration failed. Couldn't detect face. Trying again.");
+			results = faceLandmarkerService.faceLandmarker.detectForVideo(video, startTimeMs);
 		}
+		setErrorMessage();
 
 		const { faceBlendshapes } = results;
 
@@ -267,33 +267,14 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		}
 	}, [video, calculateBlendValuesOnSpectrum]);
 
-	const activateWebcamStream = useCallback(
-		(callback: () => void) => {
-			console.log('activateWebcamStream');
-			if (video === null) {
-				console.log('Wait! video not loaded yet.');
-				return;
-			}
-
-			// getUsermedia parameters.
-			const constraints = {
-				video: true,
-			};
-			// Activate the webcam stream.
-			navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
-				video.srcObject = stream;
-				video.addEventListener('loadeddata', callback);
-			});
-		},
-		[video],
-	);
-
 	// ************ UseEffects ************
 	useEffect(() => {
+		if (!isInitialized || !webcamEnabled || !webcamRunning) return;
+
 		if (calibrationStatus === CalibrationStatus.DOING) {
 			calibrateRequestRef.current = requestAnimationFrame(doCalibration);
 		}
-	}, [calibrationStatus, doCalibration]);
+	}, [calibrationStatus, doCalibration, isInitialized]);
 
 	useEffect(() => {
 		setErrorMessage();
@@ -317,7 +298,6 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		isInitialized: isInitialized,
 		startCalibration: startCalibration,
 		stopCalibration: stopCalibration,
-		activateWebcamStream: activateWebcamStream,
 		startPrediction: startPrediction,
 		stopPrediction: stopPrediction,
 		setVideoNode: (video: HTMLVideoElement) => setVideo(video),
