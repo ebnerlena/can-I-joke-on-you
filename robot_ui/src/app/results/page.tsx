@@ -25,7 +25,7 @@ export default async function DownloadsPage() {
 
 	return (
 		<>
-			<main className="flex flex-col w-full h-screen justify-start max-w-[2000px] self-center pt-28 px-8 pb-8">
+			<main className="flex flex-col w-full h-screen justify-start max-w-[2000px] self-center py-8 px-8">
 				<h2 className="font-bold pb-4 text-lg">Logs</h2>
 
 				<ul className="list-disc min-w-0">
