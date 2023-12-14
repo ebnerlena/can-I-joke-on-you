@@ -131,7 +131,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	}, [storeCalibrations]);
 
 	const doCalibration = useCallback(async () => {
-		// console.log('doCalibration', video, faceLandmarkerService.faceLandmarker);
+		//console.log('doCalibration', video, faceLandmarkerService.faceLandmarker);
 		if (!faceLandmarkerService.faceLandmarker || !video) return;
 
 		if (calibrationBlendValues.mouthSmileLeft.length >= CALIBRATION_FRAMES) {
@@ -253,7 +253,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	};
 
 	const predictWebcam = useCallback(() => {
-		// console.log('predictWebcam', faceLandmarkerService.faceLandmarker, video, predictionRunning);
+		console.log('predictWebcam', faceLandmarkerService.faceLandmarker, video, predictionRunning);
 		if (!predictionRunning) return;
 
 		if (!faceLandmarkerService.faceLandmarker || !video) return;
@@ -267,6 +267,9 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		if (results && results.faceBlendshapes?.length > 0) {
 			const { faceBlendshapes } = results;
 			calculateBlendValuesOnSpectrum(faceBlendshapes);
+		} else {
+			console.log('predicting error', results);
+			setErrorMessage("Prediction failed. Couldn't detect face. Trying again in next attempt.");
 		}
 
 		if (isPredicting) {
