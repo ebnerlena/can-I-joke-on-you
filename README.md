@@ -51,3 +51,5 @@ VM IP: 193.170.119.173
 - `pm2 monit`
 - `pm2 status`
 - `pm2 logs`
+
+Logs can found in: https://joke.servegame.com/results
