@@ -16,12 +16,14 @@ const PlayJokes = () => {
 	const [isMuted, setIsMuted] = useState<boolean>(true);
 	const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
 	const [showDebugInfo, setShowDebugInfo] = useState(false);
+	const [error, setError] = useState<string | undefined>();
 
 	const timeoutRef = useRef<NodeJS.Timeout>();
 
 	const { smileDegree, setVideoNode, startPrediction, stopPrediction } = useFaceLandmarkDetector();
 
 	const maxSmileDegree = useApplicationStore((state) => state.smileDegree);
+	const applicationError = useApplicationStore((state) => state.error);
 	const uuid = useUserStore((state) => state.uuid);
 	const startTime = useUserStore((state) => state.startTime);
 	const studyRound = useUserStore((state) => state.studyRound);
@@ -118,6 +120,10 @@ const PlayJokes = () => {
 	}, [joke]);
 
 	useEffect(() => {
+		setError(applicationError);
+	}, [applicationError]);
+
+	useEffect(() => {
 		postRequest('/recommend', { client_id: uuid }).then((res) => {
 			setJoke(res.joke);
 		});
@@ -197,6 +203,7 @@ const PlayJokes = () => {
 					<Model position={[-10, 5, 0]} scale={[6, 6, 6]} rotation={[0, (-170 * Math.PI) / 180, 0]} />
 				</Suspense>
 			</Canvas>
+			{/* {error && <p className="text-red-500 py-1 absolute bottom-4 left-4">{error}</p>} */}
 		</div>
 	);
 };
