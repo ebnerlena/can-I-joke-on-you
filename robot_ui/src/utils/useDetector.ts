@@ -34,7 +34,6 @@ let currentMaxSmileDegree: number = 0;
 let currentAvgSmileDegree: number = 0;
 
 let lastSmileDegreeHeadIdx = 0;
-let predictionRunning = false;
 
 export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	const [faceLandmarker, setFaceLandmarker] = useState<FaceLandmarker>();
@@ -240,7 +239,6 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 	const stopPrediction = () => {
 		console.log('stopPrediction');
-		if (!faceLandmarkerService.faceLandmarker || !video) return;
 
 		console.log('final max smile degree predicted', currentMaxSmileDegree);
 		setIsPredicting(false);
@@ -252,7 +250,6 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 	const predictWebcam = useCallback(() => {
 		// console.log('predictWebcam', faceLandmarkerService.faceLandmarker, video, predictionRunning);
-		if (!isPredicting) return;
 
 		if (!faceLandmarkerService.faceLandmarker || !video) return;
 		let startTimeMs = performance.now();
@@ -266,7 +263,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 			const { faceBlendshapes } = results;
 			calculateBlendValuesOnSpectrum(faceBlendshapes);
 		} else {
-			console.log('predicting error', results);
+			// console.log('predicting error', results);
 			setErrorMessage("Prediction failed. Couldn't detect face. Trying again in next attempt.");
 		}
 
