@@ -225,7 +225,6 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 	const startPrediction = () => {
 		console.log('startPrediction');
-		predictionRunning = true;
 		setIsPredicting(true);
 		smileDegrees = Array(100).fill(0);
 		currentMaxSmileDegree = 0;
@@ -244,7 +243,6 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		if (!faceLandmarkerService.faceLandmarker || !video) return;
 
 		console.log('final max smile degree predicted', currentMaxSmileDegree);
-		predictionRunning = false;
 		setIsPredicting(false);
 		setMaxSmileDegree(currentMaxSmileDegree);
 		clearInterval(predictionIntervalRef.current);
@@ -253,8 +251,8 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	};
 
 	const predictWebcam = useCallback(() => {
-		console.log('predictWebcam', faceLandmarkerService.faceLandmarker, video, predictionRunning);
-		if (!predictionRunning) return;
+		// console.log('predictWebcam', faceLandmarkerService.faceLandmarker, video, predictionRunning);
+		if (!isPredicting) return;
 
 		if (!faceLandmarkerService.faceLandmarker || !video) return;
 		let startTimeMs = performance.now();
