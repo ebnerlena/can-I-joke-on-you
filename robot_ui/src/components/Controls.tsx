@@ -30,7 +30,7 @@ const Controls: React.FC<Props> = ({ onNextClick, onPlayClick, onMuteClick, isMu
 		onNextClick();
 		timeoutRef.current = setTimeout(() => {
 			setNextJokeDisabled(false);
-		}, 2000);
+		}, 3000);
 	};
 
 	return (
