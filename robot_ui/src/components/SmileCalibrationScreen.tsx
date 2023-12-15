@@ -19,7 +19,7 @@ const SmileCalibrationScreen = () => {
 	}, [secondsLeft]);
 
 	return (
-		<div className="w-full  h-full flex flex-col items-center justify-center gap-8 p-12">
+		<div className="w-full  h-full flex flex-col items-center justify-center gap-4 p-12">
 			<div className="text-justify text-xl">
 				<p>
 					We are now doing the <span className="font-bold">SMILE</span> calibration on your face.
