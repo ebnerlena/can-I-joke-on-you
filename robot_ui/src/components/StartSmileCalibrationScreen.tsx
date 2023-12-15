@@ -39,9 +39,9 @@ const StartSmileCalibrationScreen = () => {
 					</Link>
 				</div>
 			</div>
-			<div className="flex gap-10">
-				<div className="w-62 h-62">
-					<Image src={'/images/smileTeams.png'} alt="neutral" width={200} height={200} className="w-full h-full" />
+			<div className="flex gap-10 max-md:flex-col-reverse">
+				<div className="w-62 h-62 flex flex-col justify-center">
+					<Image src={'/images/smileTeams.png'} alt="neutral" width={200} height={200} className="w-full h-auto" />
 				</div>
 				<Webcam videoConstraints={videoConstraints} />
 			</div>

@@ -164,7 +164,7 @@ const PlayJokes = () => {
 
 			{joke && (
 				<div className="w-full justify-center mr-[400px] flex px-20 max-md:mr-[50px]  max-lg:mr-[100px] max-md:mxl-[200px]">
-					<div className="mt-10 text-xl max-w-[600px] min-w-[200px] w-fit bg-black/20 rounded-lg p-4">
+					<div className="mt-10 text-xl max-md:max-w-[600px] max-w-[700px] max-sm:max-w-[300px]  min-w-[200px] w-fit bg-black/20 rounded-lg p-4">
 						{getJokeDisplayStructure(joke)}
 					</div>
 				</div>
@@ -194,7 +194,7 @@ const PlayJokes = () => {
 					shadow-camera-far={40}
 				/>
 				<Suspense>
-					<Model position={[-15, 5, 0]} scale={[6, 6, 6]} rotation={[0, (-170 * Math.PI) / 180, 0]} />
+					<Model position={[-10, 5, 0]} scale={[6, 6, 6]} rotation={[0, (-170 * Math.PI) / 180, 0]} />
 				</Suspense>
 			</Canvas>
 		</div>
