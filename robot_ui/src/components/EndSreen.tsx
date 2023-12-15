@@ -1,6 +1,15 @@
+'use client';
+
+import { useUserStore } from '@/store/store';
+import { STUDY_ROUND } from '@/types/StudyRound';
 import Link from 'next/link';
 
+const LINK_QUESTIONNAIRE_WITH_RECOMMENDER = 'https://forms.gle/aSrkka8AHTnnFwkXA';
+const LINK_QUESTIONNAIRE_WITHOUT_RECOMMENDER = 'https://forms.gle/wtiaPCp8Rzw2EtMS6 ';
+
 const EndScreen = () => {
+	const studyRound = useUserStore((state) => state.studyRound);
+
 	return (
 		<div className="h-full w-full flex flex-col items-center justify-center gap-8 p-12">
 			<div className="text-justify text-xl max-w-[800px]">
@@ -10,7 +19,9 @@ const EndScreen = () => {
 
 				<Link
 					className="btn mt-20"
-					href={'https://docs.google.com/forms/d/1XZ35rf1fPlua9fnNoVj6-foQrYfN9qi5jwdG0DC9IxA/prefill'}
+					href={
+						studyRound === STUDY_ROUND.A ? LINK_QUESTIONNAIRE_WITH_RECOMMENDER : LINK_QUESTIONNAIRE_WITHOUT_RECOMMENDER
+					}
 					target="_blank"
 					rel="noopener noreferrer">
 					Take Questionnaire
