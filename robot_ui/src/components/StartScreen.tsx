@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Webcam from 'react-webcam';
 import Image from 'next/image';
+import { ROUTES } from '@/constants';
 
 const StartScreen = () => {
 	const inputResolution = {
@@ -21,7 +22,7 @@ const StartScreen = () => {
 			<div className="flex flex-col items-center gap-16 w-full justify-center">
 				<div className="flex flex-col gap-4">
 					<div className="text-justify text-xl max-w-[1000px]">
-						<h2 className="font-bold pb-2 text-2xl">Welcome!</h2>
+						<h2 className="font-bold pb-2 text-2xl">Calibration Phase:</h2>
 						<p>Before you can start we do a short calibration of your face. </p>
 						<p>Please make sure your face is fully covered by your camera.</p>
 						<p>
@@ -31,13 +32,13 @@ const StartScreen = () => {
 							Press <span className="font-bold">START NEUTRAL CALIBRATION</span> whenever you are ready.
 						</p>
 					</div>
-					<Link href="/calibration" className="btn text-3xl w-fit self-center">
+					<Link href={ROUTES.CALIBRATION} className="btn text-3xl w-fit self-center">
 						Start NEUTRAL Calibration
 					</Link>
 				</div>
-				<div className="flex gap-10">
-					<div className="w-62 h-62">
-						<Image src={'/neutralTeams.png'} alt="neutral" width={200} height={200} className="w-full h-full" />
+				<div className="flex gap-10 max-sm:flex-col-reverse">
+					<div className="w-62 h-62 flex flex-col justify-center">
+						<Image src={'/images/neutralTeams.png'} alt="neutral" width={200} height={200} className="w-full h-auto" />
 					</div>
 					<Webcam videoConstraints={videoConstraints} />
 				</div>

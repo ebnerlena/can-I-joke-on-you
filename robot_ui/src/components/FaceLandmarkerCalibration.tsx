@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { SyntheticEvent, useEffect, useState } from 'react';
 import { useFaceLandmarkDetector } from '../utils/useDetector';
 import Webcam from 'react-webcam';
 import { CalibrationStatus } from '@/types/CalibrationStatus';
 import { useRouter } from 'next/navigation';
 import { useCalibrationStore } from '@/store/store';
 import { CalibrationMode } from '@/types/CalibrationMode';
+import { ROUTES } from '@/constants';
 
 type Props = {
 	videoHeight?: number;
@@ -14,36 +15,20 @@ type Props = {
 };
 
 const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, videoHeight }) => {
-	const webcamRef = useRef<Webcam>(null);
-
 	const [error, setError] = useState<string | null>(null);
+	const [loaded, setLoaded] = useState(false);
 
-	const { activateWebcamStream, startCalibration, setVideoNode, calibrationStatus } = useFaceLandmarkDetector();
+	const { startCalibration, setVideoNode, calibrationStatus } = useFaceLandmarkDetector();
 	const router = useRouter();
 	const setCalibrationStatus = useCalibrationStore((state) => state.setStatus);
 
 	useEffect(() => {
 		setCalibrationStatus(CalibrationMode.NEUTRAL);
-
-		if (webcamRef.current) {
-			if (webcamRef.current.video) setVideoNode(webcamRef.current.video);
-		}
 	}, []);
 
 	useEffect(() => {
-		if (!webcamRef.current?.state.hasUserMedia || !webcamRef.current.video) {
-			setError('Webcam not enabled. Please allow and enable.');
-			return;
-		} else {
-			setError(null);
-
-			setTimeout(() => activateWebcamStream(startCalibration), 1500);
-		}
-	}, [webcamRef.current?.state]);
-
-	useEffect(() => {
 		if (calibrationStatus === CalibrationStatus.DONE) {
-			router.push('/calibration/smile');
+			router.push(ROUTES.START_SMILE_CALIBRATION);
 		}
 	}, [calibrationStatus, router]);
 
@@ -58,12 +43,24 @@ const FaceLandmarkerCalibration: React.FC<Props> = ({ videoWidth, videoHeight })
 		facingMode: 'user',
 	};
 
+	const handleVideoLoad = (videoEvent: SyntheticEvent<HTMLVideoElement, Event>) => {
+		const video = videoEvent.target as HTMLVideoElement;
+
+		if (video.readyState !== 4) return;
+		if (loaded) return;
+
+		setVideoNode(video);
+
+		setTimeout(() => startCalibration(), 1000);
+		setLoaded(true);
+	};
+
 	return (
 		<div className="">
 			<div className="flex gap-1 pb-2 w-full items-center justify-center">
 				{/* {error && <p className="text-red-600 text-xl font-bold">Waiting for webcam... {error} </p>} */}
 			</div>
-			<Webcam ref={webcamRef} videoConstraints={videoConstraints} />
+			<Webcam videoConstraints={videoConstraints} onLoadedData={handleVideoLoad} />
 		</div>
 	);
 };

@@ -1,125 +1,190 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import Model from './Model';
 import { Canvas } from '@react-three/fiber';
 import { PerspectiveCamera, Text } from '@react-three/drei';
 import Controls from './Controls';
 import FaceLandmarkerDetection from './FaceLandmarkerDetection';
 import { useFaceLandmarkDetector } from '@/utils/useDetector';
-import { useApplicationStore } from '@/store/store';
+import { useApplicationStore, useUserStore } from '@/store/store';
+import { postRequest } from '@/utils/backendService';
+import { writeLog } from '@/app/actions';
 
 const PlayJokes = () => {
-	const [jokes, setJokes] = useState<string[]>([]);
-	const [activeJokeIndex, setActiveJokeIndex] = useState(0);
+	const [joke, setJoke] = useState<string>();
+	const [isMuted, setIsMuted] = useState<boolean>(true);
+	const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+	const [showDebugInfo, setShowDebugInfo] = useState(false);
+	const [error, setError] = useState<string | undefined>();
+
+	const timeoutRef = useRef<NodeJS.Timeout>();
 
 	const { smileDegree, setVideoNode, startPrediction, stopPrediction } = useFaceLandmarkDetector();
+
 	const maxSmileDegree = useApplicationStore((state) => state.smileDegree);
-	const predictionPageReloaded = useApplicationStore((state) => state.predictionPageReloaded);
-	const setPredictionPageReloaded = useApplicationStore((state) => state.setPredictionPageReloaded);
+	const applicationError = useApplicationStore((state) => state.error);
+	const uuid = useUserStore((state) => state.uuid);
+	const startTime = useUserStore((state) => state.startTime);
+	const studyRound = useUserStore((state) => state.studyRound);
 
-	useEffect(() => {
-		fetch('http://localhost:3000/jokes.json')
-			.then((res) => res.json())
-			.then((jokes) => setJokes(jokes.jokes));
+	const getJokeDisplayStructure = (joke: string) => {
+		const paragraphs = joke
+			.split(/(?<=[.!?])\s+|\[|\]|\s+(?=[A-Z]:)/)
+			.filter(Boolean)
+			.map((paragraph, index) => (
+				<p key={index}>
+					{paragraph.trim().match(/^[A-Z]+:/) ? <br /> : null}
+					{paragraph.trim()}
+				</p>
+			));
 
-		window.speechSynthesis.cancel();
-	}, []);
-
-	useEffect(() => {
-		if (!predictionPageReloaded) {
-			setPredictionPageReloaded(true);
-			window.location.reload();
-		}
-	}, []);
+		return paragraphs;
+	};
 
 	// *************** Jokes  *******************
 	const speakJoke = () => {
+		if (isMuted) return;
+
 		const synth = window.speechSynthesis;
 		const voices = synth.getVoices();
 
-		console.log(voices);
-		console.log(voices.findIndex((voice) => voice.name.includes('Alicia'))); // alicia, zac
+		//console.log(voices);
+		//console.log(voices.findIndex((voice) => voice.name.includes('Steph'))); //steph, alicia, zac
 
-		const msg = new SpeechSynthesisUtterance(jokes[activeJokeIndex]);
-		const voiceIndex = 174; // zac = 266 , alicia = 174//13300
-		msg.rate = 1;
-		msg.pitch = 1.2;
+		const msg = new SpeechSynthesisUtterance(joke);
+		const voiceIndex = 10; // steph = 10 , zac = 266 , alicia = 174
+		msg.rate = 1.1;
+		msg.pitch = 1.1;
 		msg.voice = voices[voiceIndex];
 		msg.lang = voices[voiceIndex]?.lang;
 
-		window.speechSynthesis.speak(msg);
-		startPrediction();
+		synth.speak(msg);
+
+		msg.onend = () => setIsSpeaking(false);
 	};
 
-	useEffect(() => {
-		if (jokes.length <= 0) return;
-
-		setTimeout(() => speakJoke(), 500);
-	}, [activeJokeIndex]);
-
-	const nextJoke = () => {
+	const nextJoke = async () => {
 		window.speechSynthesis.cancel();
-		stopPrediction();
+		const maxSmileDegree = stopPrediction();
 
-		// TODO send maxSmileDegree to recommender and retrieve next joke
-
-		if (activeJokeIndex === jokes.length - 1) {
-			setActiveJokeIndex(0);
-		} else {
-			setActiveJokeIndex(activeJokeIndex + 1);
+		try {
+			await writeLog(startTime, uuid, joke, maxSmileDegree, studyRound);
+			await postRequest('/rate', { client_id: uuid, rating: maxSmileDegree });
+		} catch (err) {
+			console.log(err);
+		} finally {
+			await updateJoke();
 		}
 	};
 
-	const randomJoke = () => {
-		window.speechSynthesis.cancel();
+	const updateJoke = async () => {
+		const jokeData = await postRequest('/recommend', { client_id: uuid });
 
-		const randomIndex = Math.floor(Math.random() * jokes.length);
-		setActiveJokeIndex(randomIndex);
+		setJoke(jokeData.joke);
+	};
+
+	const prepareNextJokePlaying = () => {
+		timeoutRef.current = setTimeout(
+			() => {
+				speakJoke();
+				startPrediction();
+			},
+
+			500,
+		);
 	};
 
 	const playJoke = () => {
+		setIsSpeaking(!isSpeaking);
 		if (window.speechSynthesis.speaking) {
 			window.speechSynthesis.cancel();
 		} else {
+			setIsMuted(false);
 			speakJoke();
 		}
 	};
 
+	const toggleMute = () => {
+		setIsMuted(!isMuted);
+
+		if (window.speechSynthesis.speaking) {
+			window.speechSynthesis.cancel();
+		}
+	};
+
+	useEffect(() => {
+		if (joke === undefined) return;
+
+		prepareNextJokePlaying();
+	}, [joke]);
+
+	useEffect(() => {
+		setError(applicationError);
+	}, [applicationError]);
+
+	useEffect(() => {
+		postRequest('/recommend', { client_id: uuid }).then((res) => {
+			setJoke(res.joke);
+		});
+
+		return () => clearTimeout(timeoutRef.current);
+	}, []);
+
 	return (
 		<div className="h-[79vh] w-full flex flex-col items-center justify-center">
-			<Controls onNextClick={nextJoke} onRandomClick={randomJoke} onPlayClick={playJoke} />
-
-			<div className="flex gap-4 mt-1 pb-2 w-full items-center justify-center text-xs">
-				<p className="p-0 m-0">
-					<span className="font-bold">Smile Degree: </span>
-					{smileDegree.toFixed(4)}
-				</p>
-				<p className="p-0 m-0">
-					<span className="font-bold">Last Max Smile Degree: </span>
-					{maxSmileDegree.toFixed(4)}
-				</p>
-				<button className="text-xs underline" onClick={stopPrediction}>
-					Stop Prediction
-				</button>
-				<button className="text-xs underline" onClick={startPrediction}>
-					Predict
+			<Controls
+				onNextClick={nextJoke}
+				onMuteClick={toggleMute}
+				onPlayClick={playJoke}
+				isMuted={isMuted}
+				isPlaying={isSpeaking}
+			/>
+			<div className="flex w-full items-end justify-between my-1 px-8">
+				{showDebugInfo ? (
+					<div className="flex gap-4  items-center justify-center text-xs self-center">
+						<p className="p-0 m-0">
+							<span className="font-bold">Smile Degree: </span>
+							{smileDegree.toFixed(4)}
+						</p>
+						<p className="p-0 m-0">
+							<span className="font-bold">Last Max Smile Degree: </span>
+							{maxSmileDegree.toFixed(4)}
+						</p>
+						<button className="text-xs underline" onClick={stopPrediction}>
+							Stop Prediction
+						</button>
+						<button className="text-xs underline" onClick={startPrediction}>
+							Predict
+						</button>
+					</div>
+				) : (
+					<div />
+				)}
+				<button
+					className="text-xs underline cursor-pointer justify-end w-fit"
+					onClick={() => setShowDebugInfo(!showDebugInfo)}>
+					Toggle Debug Info
 				</button>
 			</div>
 
-			{jokes[activeJokeIndex] && (
-				<p className="mt-20 text-4xl mx-[120px] max-w-[650px] bg-black/20 rounded-lg p-8">{`${jokes[activeJokeIndex]}`}</p>
+			{joke && (
+				<div className="w-full justify-center mr-[400px] flex px-20 max-md:mr-[50px]  max-lg:mr-[100px] max-md:mxl-[200px]">
+					<div className="mt-10 text-xl max-md:max-w-[600px] max-w-[700px] max-sm:max-w-[300px]  min-w-[200px] w-fit bg-black/20 rounded-lg p-4">
+						{getJokeDisplayStructure(joke)}
+					</div>
+				</div>
 			)}
 
 			<FaceLandmarkerDetection onWebcamRefReceived={setVideoNode} />
-			<Canvas shadows className="w-full">
+			<Canvas shadows className="w-full mr-0">
 				<PerspectiveCamera
 					makeDefault
 					position={[0, 20, 18]}
 					fov={75}
 					near={0.01}
 					far={1000}
-					rotation={[(-15 * Math.PI) / 180, 0, 0]}
+					rotation={[(-5 * Math.PI) / 180, 0, 0]}
 				/>
 				<hemisphereLight intensity={2} color="#ffffff" groundColor="#8d8d8d" position={[0, 50, 0]} />
 				<directionalLight
@@ -135,9 +200,10 @@ const PlayJokes = () => {
 					shadow-camera-far={40}
 				/>
 				<Suspense>
-					<Model position={[0, 5, 0]} scale={[5, 5, 5]} rotation={[0, (178 * Math.PI) / 180, 0]} />
+					<Model position={[-10, 5, 0]} scale={[6, 6, 6]} rotation={[0, (-170 * Math.PI) / 180, 0]} />
 				</Suspense>
 			</Canvas>
+			{/* {error && <p className="text-red-500 py-1 absolute bottom-4 left-4">{error}</p>} */}
 		</div>
 	);
 };

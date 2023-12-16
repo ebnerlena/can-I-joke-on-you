@@ -31,6 +31,9 @@ export class FaceLandmarkerService {
 			runningMode: 'VIDEO',
 			numFaces: 1,
 			outputFaceBlendshapes: true,
+			minFaceDetectionConfidence: 0.2,
+			minFacePresenceConfidence: 0.2,
+			minTrackingConfidence: 0.2,
 		});
 
 		return landmarker;

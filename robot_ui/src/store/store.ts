@@ -1,6 +1,7 @@
 import { ApplicationStatus } from '@/types/ApplicationStatus';
 import { CalibrationMode } from '@/types/CalibrationMode';
 import { FaceLandmarkerBlendValues } from '@/types/FaceLandmarkerBlendValues';
+import { STUDY_ROUND } from '@/types/StudyRound';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -27,7 +28,7 @@ export const useCalibrationStore = create<CalibrationStore>()(
 			setBlendValues: (blendValues) => set(() => ({ blendValues: blendValues })),
 			smileBlendValues: initialBlendValues,
 			setSmileBlendValues: (smileBlendValues) => set(() => ({ smileBlendValues: smileBlendValues })),
-			status: 0,
+			status: CalibrationMode.NEUTRAL,
 			setStatus: (status) => set(() => ({ status: status })),
 
 			reset: () =>
@@ -46,10 +47,10 @@ export const useCalibrationStore = create<CalibrationStore>()(
 interface ApplicationStore {
 	status: ApplicationStatus;
 	setStatus: (status: ApplicationStatus) => void;
+	error?: string;
+	setError: (error?: string) => void;
 	smileDegree: number;
 	setSmileDegree: (smileDegree: number) => void;
-	predictionPageReloaded: boolean;
-	setPredictionPageReloaded: (predictionPageReloaded: boolean) => void;
 
 	reset: () => void;
 }
@@ -59,21 +60,55 @@ export const useApplicationStore = create<ApplicationStore>()(
 		(set) => ({
 			status: ApplicationStatus.START,
 			setStatus: (status) => set(() => ({ status: status })),
+			error: undefined,
+			setError: (error) => set(() => ({ error: error })),
 			smileDegree: 0,
 			setSmileDegree: (smileDegree) => set(() => ({ smileDegree: smileDegree })),
-			predictionPageReloaded: false,
-			setPredictionPageReloaded: (predictionPageReloaded) =>
-				set(() => ({ predictionPageReloaded: predictionPageReloaded })),
 
 			reset: () =>
 				set(() => ({
 					status: ApplicationStatus.START,
 					smileDegree: 0,
 					predictionPageReloaded: false,
+					error: undefined,
 				})),
 		}),
 		{
 			name: 'app-storage', // name of the item in the storage (must be unique)
+		},
+	),
+);
+
+interface UserStore {
+	uuid?: string;
+	setUUID: (uuid?: string) => void;
+	studyRound: STUDY_ROUND;
+	setStudyRound: (studyRound: STUDY_ROUND) => void;
+	startTime?: Date;
+	setStartTime: (startTime?: Date) => void;
+
+	reset: () => void;
+}
+
+export const useUserStore = create<UserStore>()(
+	persist(
+		(set) => ({
+			studyRound: STUDY_ROUND.A,
+			setStudyRound: (studyRound) => set(() => ({ studyRound: studyRound })),
+			uuid: undefined,
+			setUUID: (uuid) => set(() => ({ uuid: uuid })),
+			startTime: undefined,
+			setStartTime: (startTime) => set(() => ({ startTime: startTime })),
+
+			reset: () =>
+				set(() => ({
+					studyRound: STUDY_ROUND.A,
+					uuid: undefined,
+					startTime: undefined,
+				})),
+		}),
+		{
+			name: 'user-storage', // name of the item in the storage (must be unique)
 		},
 	),
 );

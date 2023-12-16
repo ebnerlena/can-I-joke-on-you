@@ -3,13 +3,12 @@
 import { useEffect, useState } from 'react';
 import FaceLandmarkerCalibration from './FaceLandmarkerCalibration';
 import { useApplicationStore } from '@/store/store';
-import { ApplicationStatus } from '@/types/ApplicationStatus';
-import { useRouter } from 'next/navigation';
 
 const CalibrationScreen = () => {
 	const [secondsLeft, setSecondsLeft] = useState(0);
 
-	const router = useRouter();
+	const applicationError = useApplicationStore((state) => state.error);
+	const [error, setError] = useState<string | undefined>();
 
 	useEffect(() => {
 		const countdownInterval = setInterval(() => {
@@ -18,10 +17,14 @@ const CalibrationScreen = () => {
 
 		// Clear the interval when the component unmounts
 		return () => clearInterval(countdownInterval);
-	}, [secondsLeft, router]);
+	}, [secondsLeft]);
+
+	useEffect(() => {
+		setError(applicationError);
+	}, [applicationError]);
 
 	return (
-		<div className="w-full  h-full flex flex-col items-center justify-center gap-8 p-12">
+		<div className="w-full  h-full flex flex-col items-center justify-center gap-4 p-12">
 			<div className="text-justify text-xl">
 				<p>We are now doing the calibration on your face.</p>
 				<p>
@@ -29,6 +32,8 @@ const CalibrationScreen = () => {
 				</p>
 				<p>Seconds: {secondsLeft}</p>
 			</div>
+
+			{error && <p className="text-red-500 py-1">{error}</p>}
 
 			<FaceLandmarkerCalibration videoWidth={1080 / 2} videoHeight={900 / 2} />
 		</div>

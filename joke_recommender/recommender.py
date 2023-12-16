@@ -149,6 +149,10 @@ def enable():
     client_profiles[client_id]["RSdisabled"] = False
     return jsonify({"status": "success"})
 
+@app.route("/", methods=["GET"])
+def hello():
+    return jsonify({"status": "success", "message": "Hello world!"})
+
 
 if __name__ == "__main__":
     app.run(debug=True)

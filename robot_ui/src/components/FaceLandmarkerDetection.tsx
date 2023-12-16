@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { SyntheticEvent, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 
 type Props = {
@@ -8,19 +8,10 @@ type Props = {
 };
 
 const FaceLandmarkerDetection: React.FC<Props> = ({ onWebcamRefReceived }) => {
-	const webcamRef = useRef<Webcam>(null);
-
-	useEffect(() => {
-		if (webcamRef.current) {
-			if (webcamRef.current.video) {
-				onWebcamRefReceived(webcamRef.current.video);
-			}
-		}
-	}, [onWebcamRefReceived]);
-
+	const [loaded, setLoaded] = useState(false);
 	const inputResolution = {
-		width: 1080 / 4,
-		height: 900 / 4,
+		width: 1080 / 5,
+		height: 900 / 5,
 	};
 
 	const videoConstraints = {
@@ -29,9 +20,19 @@ const FaceLandmarkerDetection: React.FC<Props> = ({ onWebcamRefReceived }) => {
 		facingMode: 'user',
 	};
 
+	const handleVideoLoad = (videoEvent: SyntheticEvent<HTMLVideoElement, Event>) => {
+		const video = videoEvent.target as HTMLVideoElement;
+
+		if (video.readyState !== 4) return;
+		if (loaded) return;
+
+		onWebcamRefReceived(video);
+		setLoaded(true);
+	};
+
 	return (
 		<div className="absolute bottom-2 right-4 z-10">
-			<Webcam ref={webcamRef} videoConstraints={videoConstraints} />
+			<Webcam videoConstraints={videoConstraints} onLoadedData={handleVideoLoad} />
 		</div>
 	);
 };

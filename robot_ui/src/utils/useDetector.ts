@@ -12,11 +12,10 @@ interface FaceLandmarkDetectorType {
 	webcamEnabled: boolean;
 	smileDegree: number;
 	isInitialized: boolean;
-	activateWebcamStream: (callback: () => void) => void;
 	startCalibration: () => void;
 	stopCalibration: () => void;
 	startPrediction: () => void;
-	stopPrediction: () => void;
+	stopPrediction: () => number | undefined;
 	setVideoNode: (video: HTMLVideoElement) => void;
 }
 
@@ -35,11 +34,11 @@ let currentMaxSmileDegree: number = 0;
 let currentAvgSmileDegree: number = 0;
 
 let lastSmileDegreeHeadIdx = 0;
-let predictionRunning = false;
 
 export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	const [faceLandmarker, setFaceLandmarker] = useState<FaceLandmarker>();
 	const [isInitialized, setIsInitialized] = useState<boolean>(false);
+	const [isPredicting, setIsPredicting] = useState<boolean>(false);
 	const [video, setVideo] = useState<HTMLVideoElement | null>(null);
 	const [webcamRunning, setWebcamRunning] = useState<boolean>(false);
 	const [webcamEnabled, setWebcamEnabled] = useState<boolean>(false);
@@ -57,6 +56,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	const smileBlendValuesFromCalibration = useCalibrationStore((state) => state.smileBlendValues);
 	const setSmileBlendValuesFromCalibration = useCalibrationStore((state) => state.setSmileBlendValues);
 	const setMaxSmileDegree = useApplicationStore((state) => state.setSmileDegree);
+	const setErrorMessage = useApplicationStore((state) => state.setError);
 
 	// Refs
 	const calibrateRequestRef = useRef<number>();
@@ -83,17 +83,17 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 	const startCalibration = useCallback(() => {
 		console.log('startCalibration');
-		if (!video) {
-			console.log('Wait! video not loaded yet.');
-			return;
-		}
+		// if (!video) {
+		// 	console.log('Wait! video not loaded yet.');
+		// 	return;
+		// }
 
 		setCalibrationBlendValues({
 			mouthSmileLeft: [],
 			mouthSmileRight: [],
 		});
 		setCalibrationStatus(CalibrationStatus.DOING);
-	}, [video]);
+	}, []);
 
 	const storeCalibrations = useCallback(async () => {
 		console.log('storeCalibrations', calibrationBlendValues);
@@ -130,7 +130,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 	}, [storeCalibrations]);
 
 	const doCalibration = useCallback(async () => {
-		// console.log('doCalibration', video, faceLandmarkerService.faceLandmarker);
+		//console.log('doCalibration', video, faceLandmarkerService.faceLandmarker);
 		if (!faceLandmarkerService.faceLandmarker || !video) return;
 
 		if (calibrationBlendValues.mouthSmileLeft.length >= CALIBRATION_FRAMES) {
@@ -144,10 +144,14 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		if (lastVideoTime !== video.currentTime) {
 			lastVideoTime = video.currentTime;
 			results = faceLandmarkerService.faceLandmarker.detectForVideo(video, startTimeMs);
-			// console.log(results);
 		}
 
-		if (!results || results.faceBlendshapes.length === 0) return;
+		// just retry in case results are array with length 0
+		while (!results || results.faceBlendshapes.length === 0) {
+			setErrorMessage("Calibration failed. Couldn't detect face. Trying again.");
+			results = faceLandmarkerService.faceLandmarker.detectForVideo(video, startTimeMs);
+		}
+		setErrorMessage();
 
 		const { faceBlendshapes } = results;
 
@@ -203,40 +207,41 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 		// Pushing smileDegree to shifting array
 		smileDegrees[lastSmileDegreeHeadIdx] = tmpSmileDegree;
-		lastSmileDegreeHeadIdx += 1 % smileDegrees.length;
+		lastSmileDegreeHeadIdx = (lastSmileDegreeHeadIdx + 1) % smileDegrees.length;
 
 		// Update average and max smile degree
 		const tmpAvgSmileDegree = smileDegrees.reduce((acc, num) => acc + num, 0) / smileDegrees.length;
 		setSmileDegree(tmpSmileDegree);
 		if (tmpAvgSmileDegree > currentMaxSmileDegree) {
 			currentAvgSmileDegree = tmpAvgSmileDegree;
+
+			// console.log('currentMaxSmileDegree Update', Math.max(...smileDegrees), smileDegrees);
 			currentMaxSmileDegree = Math.max(...smileDegrees);
 		}
 
-		console.log('set smile degree: ', tmpSmileDegree);
+		// console.log('set smile degree: ', tmpSmileDegree);
 	};
 
 	const startPrediction = () => {
 		console.log('startPrediction');
-		predictionRunning = true;
+		setIsPredicting(true);
 		smileDegrees = Array(100).fill(0);
 		currentMaxSmileDegree = 0;
 		currentAvgSmileDegree = 0;
 
-		predictRequestRef.current = requestAnimationFrame(predictWebcam);
+		// predictRequestRef.current = requestAnimationFrame(predictWebcam);
 
-		predictionIntervalRef.current = setInterval(
-			() => (predictRequestRef.current = requestAnimationFrame(predictWebcam)),
-			PREDICTION_INTERVAL,
-		);
+		// predictionIntervalRef.current = setInterval(
+		// 	() => (predictRequestRef.current = requestAnimationFrame(predictWebcam)),
+		// 	PREDICTION_INTERVAL,
+		// );
 	};
 
 	const stopPrediction = () => {
 		console.log('stopPrediction');
-		if (!faceLandmarkerService.faceLandmarker || !video) return;
 
 		console.log('final max smile degree predicted', currentMaxSmileDegree);
-		predictionRunning = false;
+		setIsPredicting(false);
 		setMaxSmileDegree(currentMaxSmileDegree);
 		clearInterval(predictionIntervalRef.current);
 
@@ -245,7 +250,6 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 
 	const predictWebcam = useCallback(() => {
 		// console.log('predictWebcam', faceLandmarkerService.faceLandmarker, video, predictionRunning);
-		if (!predictionRunning) return;
 
 		if (!faceLandmarkerService.faceLandmarker || !video) return;
 		let startTimeMs = performance.now();
@@ -258,38 +262,36 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		if (results && results.faceBlendshapes?.length > 0) {
 			const { faceBlendshapes } = results;
 			calculateBlendValuesOnSpectrum(faceBlendshapes);
+		} else {
+			// console.log('predicting error', results);
+			setErrorMessage("Prediction failed. Couldn't detect face. Trying again in next attempt.");
 		}
-	}, [video, calculateBlendValuesOnSpectrum]);
 
-	const activateWebcamStream = useCallback(
-		(callback: () => void) => {
-			console.log('activateWebcamStream');
-			if (video === null) {
-				console.log('Wait! video not loaded yet.');
-				return;
-			}
-
-			// getUsermedia parameters.
-			const constraints = {
-				video: true,
-			};
-			// Activate the webcam stream.
-			navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
-				video.srcObject = stream;
-				video.addEventListener('loadeddata', callback);
-			});
-		},
-		[video],
-	);
+		if (isPredicting) {
+			predictRequestRef.current = requestAnimationFrame(predictWebcam);
+		}
+	}, [video, calculateBlendValuesOnSpectrum, isPredicting]);
 
 	// ************ UseEffects ************
 	useEffect(() => {
+		if (!isInitialized || !webcamEnabled || !webcamRunning) return;
+
 		if (calibrationStatus === CalibrationStatus.DOING) {
 			calibrateRequestRef.current = requestAnimationFrame(doCalibration);
 		}
-	}, [calibrationStatus, doCalibration]);
+	}, [calibrationStatus, doCalibration, isInitialized]);
 
 	useEffect(() => {
+		if (!isInitialized || !webcamEnabled || !webcamRunning) return;
+
+		if (isPredicting) {
+			predictRequestRef.current = requestAnimationFrame(predictWebcam);
+		}
+	}, [isPredicting, isInitialized]);
+
+	useEffect(() => {
+		setErrorMessage();
+
 		if (!video) return;
 
 		initFacelandmarks();
@@ -299,7 +301,7 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 			predictRequestRef.current && cancelAnimationFrame(predictRequestRef.current);
 			predictionIntervalRef.current && clearInterval(predictionIntervalRef.current);
 		};
-	}, [initFacelandmarks, video]);
+	}, [initFacelandmarks, setErrorMessage, video]);
 
 	return {
 		calibrationStatus: calibrationStatus,
@@ -309,7 +311,6 @@ export const useFaceLandmarkDetector = (): FaceLandmarkDetectorType => {
 		isInitialized: isInitialized,
 		startCalibration: startCalibration,
 		stopCalibration: stopCalibration,
-		activateWebcamStream: activateWebcamStream,
 		startPrediction: startPrediction,
 		stopPrediction: stopPrediction,
 		setVideoNode: (video: HTMLVideoElement) => setVideo(video),

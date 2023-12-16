@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Webcam from 'react-webcam';
 import Image from 'next/image';
+import { ROUTES } from '@/constants';
 
 const StartSmileCalibrationScreen = () => {
 	const inputResolution = {
@@ -33,14 +34,14 @@ const StartSmileCalibrationScreen = () => {
 						</p>
 					</div>
 
-					<Link href="/smile-calibration" className="btn text-3xl w-fit self-center mt-10">
+					<Link href={ROUTES.SMILE_CALIBRATION} className="btn text-3xl w-fit self-center mt-10">
 						Start Smile Calibration
 					</Link>
 				</div>
 			</div>
-			<div className="flex gap-10">
-				<div className="w-62 h-62">
-					<Image src={'/smileTeams.png'} alt="neutral" width={200} height={200} className="w-full h-full" />
+			<div className="flex gap-10 max-md:flex-col-reverse">
+				<div className="w-62 h-62 flex flex-col justify-center">
+					<Image src={'/images/smileTeams.png'} alt="neutral" width={200} height={200} className="w-full h-auto" />
 				</div>
 				<Webcam videoConstraints={videoConstraints} />
 			</div>
