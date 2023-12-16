@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pandas as pd
 import numpy as np
+import hashlib
 
 EPSILON = 1.0
 MIN_EPSILON = 0.1
@@ -29,6 +30,8 @@ def pick_random_joke_in_category(category):
     jokes_in_category = jokes_dataset[jokes_dataset["Cluster"] == category]
     return jokes_in_category.sample(1)["Joke"].tolist()[0]
 
+def hash_joke(joke:str) -> str:
+    return hashlib.md5(joke.encode()).hexdigest()
 
 # epsilon-greedy Q-table based recommender
 def recommend_joke(client_id):
@@ -37,7 +40,8 @@ def recommend_joke(client_id):
             "Q-row": np.full(n_categories, 0.5),
             "LastRecoCategory": None,
             "RecoCount": 0,
-            "RSdisabled": False
+            "RSdisabled": False,
+            "AlreadyRecommended": set(),
         }
 
     greedyness_progress = client_profiles[client_id]["RecoCount"] / GREEDYNESS_END
@@ -75,7 +79,11 @@ def recommend_joke(client_id):
         client_profiles[client_id]["LastRecoCategory"] = recommended_category_index
         recommended_joke = pick_random_joke_in_category(recommended_category)
 
-    client_profiles[client_id]["RecoCount"] += 1
+    if hash_joke(recommended_joke) in client_profiles[client_id]["AlreadyRecommended"]:
+        return recommend_joke(client_id)
+
+    client_profiles[client_id]["RecoCount"] += 1    
+    client_profiles[client_id]["AlreadyRecommended"].add(hash_joke(recommended_joke))
 
     return recommended_joke
 
