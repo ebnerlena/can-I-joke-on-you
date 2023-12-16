@@ -74,7 +74,7 @@ const IntroductionScreen = () => {
 
 						<p className="pt-4">Please select what the person you are doing the study with is telling you. </p>
 						<div className="flex gap-12 w-full justify-center py-6 ">
-							<label key={'a'} className="flex flex-col items-center mb-2">
+							<label key={'a'} className="flex flex-col items-center mb-2 p-2">
 								<input
 									type="radio"
 									name={'a'}
@@ -90,7 +90,7 @@ const IntroductionScreen = () => {
 								<span className="mt-1 max-md:text-md text-xl text-center">{STUDY_ROUND.A}</span>
 							</label>
 
-							<label key={'b'} className="flex flex-col items-center mb-2">
+							<label key={'b'} className="flex flex-col items-center mb-2 p-2">
 								<input
 									type="radio"
 									name={'b'}
