@@ -10,7 +10,6 @@ GREEDYNESS_END = 60
 JOKES_DATASET = "filtered_jokes_data.csv"
 JOKES_CATEGORIES = "filtered_clusters_data.csv"
 LEARNING_RATE = 0.1
-DISCOUNT_FACTOR = 0.9
 GREEDY_CATEGORIES_SPLIT = 0.3
 
 jokes_dataset = pd.read_csv(JOKES_DATASET)
@@ -69,7 +68,7 @@ def recommend_joke(client_id):
     else:
         q_row = client_profiles[client_id]["Q-row"]
         top_indices = np.argsort(q_row)[-greedy_area:]
-        ranking_probabilities = np.arange(1, greedy_area+1)[::-1]
+        ranking_probabilities = np.arange(1, greedy_area+1)
         probabilities = ranking_probabilities / np.sum(ranking_probabilities)
         recommended_category_index = np.random.choice(top_indices, p=probabilities)
 
@@ -89,12 +88,9 @@ def recommend_joke(client_id):
 
 
 def learn(client_id, rating):
-    rating = rating * 2 - 1
     recommendation_index = client_profiles[client_id]["LastRecoCategory"]
     old_value = client_profiles[client_id]["Q-row"][recommendation_index]
-    new_value = (1 - LEARNING_RATE) * old_value + LEARNING_RATE * (
-        rating + DISCOUNT_FACTOR * np.max(client_profiles[client_id]["Q-row"])
-    )
+    new_value = (1 - LEARNING_RATE) * old_value + LEARNING_RATE * rating
     client_profiles[client_id]["Q-row"][recommendation_index] = new_value
 
 
