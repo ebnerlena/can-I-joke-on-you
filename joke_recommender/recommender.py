@@ -33,7 +33,7 @@ def hash_joke(joke:str) -> str:
     return hashlib.md5(joke.encode()).hexdigest()
 
 # epsilon-greedy Q-table based recommender
-def recommend_joke(client_id):
+def recommend_joke(client_id, rep=0):
     if client_id not in client_profiles:
         client_profiles[client_id] = {
             "Q-row": np.full(n_categories, 0.5),
@@ -78,8 +78,8 @@ def recommend_joke(client_id):
         client_profiles[client_id]["LastRecoCategory"] = recommended_category_index
         recommended_joke = pick_random_joke_in_category(recommended_category)
 
-    if hash_joke(recommended_joke) in client_profiles[client_id]["AlreadyRecommended"]:
-        return recommend_joke(client_id)
+    if rep < 5 and hash_joke(recommended_joke) in client_profiles[client_id]["AlreadyRecommended"]:
+        return recommend_joke(client_id, rep=rep+1)
 
     client_profiles[client_id]["RecoCount"] += 1    
     client_profiles[client_id]["AlreadyRecommended"].add(hash_joke(recommended_joke))
