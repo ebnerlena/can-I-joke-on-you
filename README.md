@@ -20,6 +20,9 @@ A robot that tells jokes to the user. Able to detect the user’s facial express
 - [Emotion Classifier](./emotion_classification/)
 - [Robot UI](./robot_ui/)
 - [Presentations](./presentations)
+- [Happiness Evaluation](./experiments/)
+- [UX Evaluation](./evaluation/)
+- [Demo Videos](./videos/)
 
 ## Links
 
