@@ -5,7 +5,7 @@ import { STUDY_ROUND } from '@/types/StudyRound';
 import Link from 'next/link';
 
 const LINK_QUESTIONNAIRE_WITH_RECOMMENDER = 'https://forms.gle/aSrkka8AHTnnFwkXA';
-const LINK_QUESTIONNAIRE_WITHOUT_RECOMMENDER = 'https://forms.gle/wtiaPCp8Rzw2EtMS6 ';
+const LINK_QUESTIONNAIRE_WITHOUT_RECOMMENDER = 'https://forms.gle/wtiaPCp8Rzw2EtMS6';
 
 const EndScreen = () => {
 	const studyRound = useUserStore((state) => state.studyRound);

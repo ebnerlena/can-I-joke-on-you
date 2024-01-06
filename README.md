@@ -20,12 +20,17 @@ A robot that tells jokes to the user. Able to detect the user’s facial express
 - [Emotion Classifier](./emotion_classification/)
 - [Robot UI](./robot_ui/)
 - [Presentations](./presentations)
+- [Happiness Evaluation](./experiments/)
+- [UX Evaluation](./evaluation/)
+- [Demo Videos](./videos/)
 
 ## Links
 
-- [General Document](https://docs.google.com/document/d/1xoBDYfB_tQNx1Hu9t8IMaJoRUrBUHCxZczYuDr3DBCg/edit#heading=h.rekzzaq41cmi)
-- [Presentation 01](https://docs.google.com/presentation/d/1JB8wn9jGe2sOnM-HTnyxz9yOSQSLPO_NgbTbA2yuGwo/edit#slide=id.g288f80c3119_0_0)
-- [Presentation 02](https://docs.google.com/presentation/d/1NLfo9PPdKefyPbRgMfm4sjhfsPoH3O5106PqlZcwzKk/edit#slide=id.g2963559f8a0_0_93)
+- [General Document](https://docs.google.com/document/d/1xoBDYfB_tQNx1Hu9t8IMaJoRUrBUHCxZczYuDr3DBCg/)
+- [Presentation 01](https://docs.google.com/presentation/d/1JB8wn9jGe2sOnM-HTnyxz9yOSQSLPO_NgbTbA2yuGwo)
+- [Presentation 02](https://docs.google.com/presentation/d/1NLfo9PPdKefyPbRgMfm4sjhfsPoH3O5106PqlZcwzKk/)
+- [Presentation 03](https://docs.google.com/presentation/d/1SVNg6TVHIPGIgVDcfFjddChY-zttRzaqYxJbl2FxzIU/)
+- [Presentation 04](https://docs.google.com/presentation/d/1dymri4Q5WxQ5TcJGYGZVQFeRvMPhtLu_QEFeR4Y5SQs/)
 
 ## Resources
 
